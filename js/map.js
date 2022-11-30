@@ -34,6 +34,38 @@ const ctx = {
 dwScale4color = 0;
 
 function makeMap(svgEl){
+
+
+    dwScale4color = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([1,0]);
+    let legendG = svgEl.append("g")
+                        .attr("id", "colorLegend")
+                        .attr("opacity", 1)
+                        .attr("transform", "translate(0,100)");
+
+    ctx.rangeOverAll = [ctx.min_max.min_LE, ctx.min_max.max_LE];
+    let range = d3.range(ctx.min_max.min_LE, ctx.min_max.max_LE, (ctx.min_max.max_LE - ctx.min_max.min_LE) / 50).reverse()
+    let scale4colorLegend = d3.scaleLinear()
+                    .domain(ctx.rangeOverAll)
+                    .rangeRound([250,0]);
+    legendG.selectAll("line")
+           .data(range)
+           .enter()
+           .append("line")
+           .attr("x1", 0)
+           .attr("y1", (d,j) => (j * 5))
+           .attr("x2", 20)
+           .attr("y2", (d,j) => (j * 5))
+           .attr("stroke-width", 5)
+           .attr("stroke", (d) => d3.interpolateGnBu(dwScale4color(d)));
+    legendG.append("g")
+           .attr("transform", `translate(25,-2.5)`)
+           .call(d3.axisRight(scale4colorLegend).ticks(5));
+    legendG.append("text")
+           .attr("x", 0)
+           .attr("y", 250+12)
+           .text(ctx.FACTOR);
+
+    
     ctx.mapG = svgEl.append("g")
                     .attr("id", "map")
                     .attr("clip-path", "url(#clip)")
@@ -69,7 +101,6 @@ function addCountries(){
     .style('background-color', 'Gainsboro')
     .text("a simple tooltip");
 
-    dwScale4color = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([1,0]);
     let geoGenrator = d3.geoPath().projection(ctx.currentProj);
     ctx.mapG.selectAll("path.country")
     .data(ctx.countries.features)
@@ -85,12 +116,11 @@ function addCountries(){
         return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en  + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"]) + "</p>"); 
     })
     .on('mousemove', function (d) {
-        return tooltip.style('top', (event.pageY - 50)+'px').style('left',(event.pageX+50)+'px')
+        return tooltip.style('top', (event.pageY - 50)+'px').style('left',(event.pageX+50)+'px');
     })
     .on("mouseout", function(){d3.select(this).style("fill", getColor); return tooltip.style("visibility", "hidden");})
-    .on("click", linePlot(d));
+    // .on("click", linePlot(d));
     ;
-
 };
 
 function getValue(d){
@@ -249,11 +279,24 @@ function fig1Factor(factor){
             break;
     }
     dwScale4color = d3.scalePow().domain([min, max]).range([1,0]);
+    ctx.rangeOverAll = [min, max];
     ctx.FACTOR = factor;
     updateMap();
 }
 
 function updateMap(){
+
+    let scale4colorLegend = d3.scaleLinear()
+    .domain(ctx.rangeOverAll)
+    .rangeRound([250,0]);
+    d3.select("#colorLegend>g")
+           .attr("transform", `translate(25,-2.5)`)
+           .call(d3.axisRight(scale4colorLegend).ticks(5));
+    d3.select("#colorLegend>text")
+           .attr("x", 0)
+           .attr("y", 250+12)
+           .text(ctx.FACTOR);
+
     ctx.mapG.selectAll("path.country")
     .transition()
     .duration(500)
@@ -288,7 +331,7 @@ function loadData(svgEl){
                 male = {};
                 female = {};
                 for(i = 0; i< data[1].length; i++){
-                    if(data[1][i].Code === d.properties["iso_a3"]){
+                    if(data[1][i].Code === d.properties["iso_a3_eh"]){
                         let year = data[1][i].Year;
                         if(data[1][i].Gender == "Male"){
                             male[year] = data[1][i];
@@ -385,7 +428,6 @@ function getDataRange(data){
             min_SR: min_SR,
             max_SR: max_SR,
         }
-        console.log(max_HB)
     }
     )
 }
