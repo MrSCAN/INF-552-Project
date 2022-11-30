@@ -5,19 +5,74 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="js/d3-geo-projection.v4.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
     <script type="text/javascript" src="js/map.js"></script>
+    <script type="text/javascript" src="js/fig2.js"></script>
     <style>
         html, body { width: 100%; height: 100%; padding: 0; margin: 0 }
         div { position: absolute; padding: 1em; border: 2px solid #555 }
-        #f1 { background: rgb(215, 190, 205); top: 0;   left: 0;   right: 50%; bottom: 40% }
-        #f2 { background: rgb(84, 73, 56); top: 0;   left: 50%; right: 0;   bottom: 50% }
+        #f1 { background: rgb(215, 190, 205); top: 5%;   left: 0;   right: 50%; bottom: 40% }
+        #f2 { background: rgb(84, 73, 56); top: 5%;   left: 50%; right: 0;   bottom: 50% }
         #f3 { background: rgb(78, 78, 94); top: 60%; left: 0;   right: 50%; bottom: 0}
         #f4 { background: rgb(103, 123, 103); top: 50%; left: 50%; right: 0;   bottom: 0}
     </style>
     <title>Document</title>
 </head>
 <body onload="createViz()">
+    <body>
+    Year:
+    <select id="year">
+        <option value="2000">2000</option>
+        <option value="2001">2001</option>
+        <option value="2002">2002</option>
+        <option value="2003">2003</option>
+        <option value="2004">2004</option>
+        <option value="2005">2005</option>
+        <option value="2006">2006</option>
+        <option value="2007">2007</option>
+        <option value="2008">2008</option>
+        <option value="2009">2009</option>
+        <option value="2010">2010</option>
+        <option value="2011">2011</option>
+        <option value="2012">2012</option>
+        <option value="2013">2013</option>
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+    </select>   
+    Gender:
+    <select id="gender">
+        <option value="all">all</option>
+        <option value="male">male</option>
+        <option value="female">female</option>
+    </select>
+    Factor:
+    <select id="factor">
+        <option value="Life expectancy">Life expectancy</option>
+        <option value="Unemployment">Unemployment</option>
+        <option value="Infant Mortality">Infant Mortality</option>
+        <option value="GDP">GDP</option>
+        <option value="GNI">GNI</option>
+        <option value="Clean fuels and cooking technologies">Clean fuels and cooking technologies</option>
+        <option value="Per Capita">Per Capita</option>
+        <option value="Mortality caused by road traffic injury">Mortality caused by road traffic injury</option>
+        <option value="Tuberculosis Incidence">Tuberculosis Incidence</option>
+        <option value="DPT Immunization">DPT Immunization</option>
+        <option value="HepB3 Immunization">HepB3 Immunization</option>
+        <option value="Measles Immunization">Measles Immunization</option>
+        <option value="Hospital beds">Hospital beds</option>
+        <option value="Basic sanitation services">Basic sanitation services</option>
+        <option value="Tuberculosis treatment">Tuberculosis treatment</option>
+        <option value="Urban population">Urban population</option>
+        <option value="Rural population">Rural population</option>
+        <option value="Non-communicable Mortality">Non-communicable Mortality</option>
+        <option value="Sucide Rate">Sucide Rate</option>
+    </select>
     <div id="f1">Frame 1: world map</div>
     <div id="f2">Frame 2: Speed</Frame></Frame></div>
     <div id="f3">Frame 3: Animated Scatter Plot</div>
