@@ -2,7 +2,7 @@ const MAP_W = 0.5 * window.innerWidth;
 const MAP_H = 0.5 * window.innerHeight;
 
 const PROJECTIONS = {
-    ER: d3.geoEquirectangular().scale(MAP_H / Math.PI),
+    ER: d3.geoEquirectangular().scale(MAP_H/ Math.PI),
     IM: d3.geoInterrupt(d3.geoMollweideRaw,
          [[ // northern hemisphere
            [[-180,   0], [-100,  90], [ -40,   0]],
