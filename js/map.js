@@ -1,5 +1,5 @@
-const MAP_W = 960;
-const MAP_H = 484;
+const MAP_W = 0.5 * window.innerWidth;
+const MAP_H = 0.5 * window.innerHeight;
 
 const PROJECTIONS = {
     ER: d3.geoEquirectangular().scale(MAP_H / Math.PI),
@@ -81,19 +81,16 @@ function addCountries(){
     .style("pointer-events", "all")
     .on("mouseover", function(d, i){
         d3.select(this).style("fill", "red").style("stoke", "black");
-        return tooltip.style("visibility", "visible").text(ctx.FACTOR + ": " + getValue(d.path[0]["__data__"])); 
+        console.log(d.path[0]["__data__"]);
+        return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en  + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"]) + "</p>"); 
+    })
+    .on('mousemove', function (d) {
+        return tooltip.style('top', (event.pageY - 50)+'px').style('left',(event.pageX+50)+'px')
     })
     .on("mouseout", function(){d3.select(this).style("fill", getColor); return tooltip.style("visibility", "hidden");})
     .on("click", linePlot(d));
     ;
 
-
-    // .append("svg:title")
-    // .text(function(d){
-    //     if(JSON.stringify(d.properties.data_full.male) != "{}" && d.properties.data_full.male[2000] && d.properties.data_full.male[2000]["Life expectancy"]){
-    //         return dwScale4color(d.properties.data_full.male[2000]["Life expectancy"]);
-    //     }
-    // })
 };
 
 function getValue(d){
