@@ -43,15 +43,15 @@ const ctx = {
     FACTOR: "Life expectancy",
     countries: [],
     SHOW_FIG3: false,
+    SHOW_FIG2: false,
     min_max: {},
 };
 
-dwScale4color = 0;
 
 function makeMap(svgEl) {
 
 
-    dwScale4color = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([1, 0]);
+    ctx.dwScale4color = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([1, 0]);
     let legendG = svgEl.append("g")
         .attr("id", "colorLegend")
         .attr("opacity", 1)
@@ -71,7 +71,7 @@ function makeMap(svgEl) {
         .attr("x2", 20)
         .attr("y2", (d, j) => (j * 5))
         .attr("stroke-width", 5)
-        .attr("stroke", (d) => d3.interpolateGnBu(dwScale4color(d)));
+        .attr("stroke", (d) => d3.interpolateGnBu(ctx.dwScale4color(d)));
     legendG.append("g")
         .attr("transform", `translate(25,-2.5)`)
         .call(d3.axisRight(scale4colorLegend).ticks(5));
@@ -123,7 +123,7 @@ function addCountries() {
         .append("path")
         .attr("class", "country")
         .attr("d", geoGenrator)
-        .style("fill", getColor)
+        .style("fill", d => { return getColor(d)})
         .style("pointer-events", "all")
         .on("mouseover", function (d, i) {
             d3.select(this).style("fill", "red").style("stoke", "black");
@@ -133,7 +133,7 @@ function addCountries() {
             return tooltip.style('top', (event.pageY - 50) + 'px').style('left', (event.pageX + 50) + 'px');
         })
         .on("mouseout", function () { d3.select(this).style("fill", getColor); return tooltip.style("visibility", "hidden"); })
-        .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY) });
+        .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
     ;
 };
 
@@ -155,11 +155,12 @@ function getColor(d) {
     if (ctx.GENDER == "all") {
         if (JSON.stringify(d.properties.data_full.male) != "{}" && d.properties.data_full.male[ctx.YEAR] && d.properties.data_full.male[ctx.YEAR][ctx.FACTOR]
             && JSON.stringify(d.properties.data_full.female) != "{}" && d.properties.data_full.female[ctx.YEAR] && d.properties.data_full.female[ctx.YEAR][ctx.FACTOR]) {
-            return d3.interpolateGnBu(dwScale4color((parseFloat(d.properties.data_full["female"][ctx.YEAR][ctx.FACTOR]) + parseFloat(d.properties.data_full["male"][ctx.YEAR][ctx.FACTOR])) / 2));
+            // console.log(ctx.dwScale4color(parseFloat(d.properties.data_full["female"][ctx.YEAR][ctx.FACTOR])));
+            return d3.interpolateGnBu(ctx.dwScale4color((parseFloat(d.properties.data_full["female"][ctx.YEAR][ctx.FACTOR]) + parseFloat(d.properties.data_full["male"][ctx.YEAR][ctx.FACTOR])) / 2));
         }
     } else {
         if (JSON.stringify(d.properties.data_full[ctx.GENDER]) != "{}" && d.properties.data_full[ctx.GENDER][ctx.YEAR] && d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]) {
-            return d3.interpolateGnBu(dwScale4color(d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]));
+            return d3.interpolateGnBu(ctx.dwScale4color(d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]));
         }
     }
     return ctx.undefinedColor;
@@ -235,12 +236,16 @@ function initializeSelectBox() {
                     .duration(500)
                     .style("fill-opacity", 1)
             }
-            linePlot();
+            if(ctx.SHOW_FIG2){
+                linePlot();
+            }
         });
     d3.select("#factor")
         .on('change', function () {
             fig1Factor(this.value);
-            linePlot();
+            if(ctx.SHOW_FIG2){
+                linePlot();
+            }
             if (!ctx.SHOW_FIG3) {
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
@@ -342,7 +347,7 @@ function fig1Factor(factor) {
             max = ctx.min_max.max_SR;
             break;
     }
-    dwScale4color = d3.scaleLinear().domain([min, max]).range([1, 0]);
+    ctx.dwScale4color = d3.scaleLinear().domain([min, max]).range([1, 0]);
     ctx.fig3_scaler = d3.scaleLinear().domain([min, max]).range([0, dimensions.boundedWidth]);
     ctx.rangeOverAll = [min, max];
     ctx.FACTOR = factor;
@@ -350,7 +355,6 @@ function fig1Factor(factor) {
 }
 
 function updateMap() {
-
     let scale4colorLegend = d3.scaleLinear()
         .domain(ctx.rangeOverAll)
         .rangeRound([250, 0]);
@@ -373,11 +377,11 @@ function updateMap() {
             if (ctx.GENDER == "all") {
                 if (JSON.stringify(d.properties.data_full.male) != "{}" && d.properties.data_full.male[ctx.YEAR] && d.properties.data_full.male[ctx.YEAR][ctx.FACTOR]
                     && JSON.stringify(d.properties.data_full.female) != "{}" && d.properties.data_full.female[ctx.YEAR] && d.properties.data_full.female[ctx.YEAR][ctx.FACTOR]) {
-                    return d3.interpolateGnBu(dwScale4color((parseFloat(d.properties.data_full["female"][ctx.YEAR][ctx.FACTOR]) + parseFloat(d.properties.data_full["male"][ctx.YEAR][ctx.FACTOR])) / 2));
+                    return d3.interpolateGnBu(ctx.dwScale4color((parseFloat(d.properties.data_full["female"][ctx.YEAR][ctx.FACTOR]) + parseFloat(d.properties.data_full["male"][ctx.YEAR][ctx.FACTOR])) / 2));
                 }
             } else {
                 if (JSON.stringify(d.properties.data_full[ctx.GENDER]) != "{}" && d.properties.data_full[ctx.GENDER][ctx.YEAR] && d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]) {
-                    return d3.interpolateGnBu(dwScale4color(d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]));
+                    return d3.interpolateGnBu(ctx.dwScale4color(d.properties.data_full[ctx.GENDER][ctx.YEAR][ctx.FACTOR]));
                 }
             }
             return ctx.undefinedColor;
@@ -385,13 +389,12 @@ function updateMap() {
 }
 
 function loadData(svgEl) {
-    // ... load data, transform it, store it in ctx
-    // ... then call makeMap(svgEl)
+
+    getDataRange();
     initializeSelectBox();
     promise1 = d3.json("custom.geo.json");
     promise2 = d3.csv("who_life_expectancy_all.csv");
 
-    getDataRange();
     Promise.all([promise1, promise2])
         .then(function (data) {
             let temp = {};
@@ -414,6 +417,7 @@ function loadData(svgEl) {
             )
             ctx.countries = data[0];
             makeMap(svgEl);
+            fig1Factor("Life expectancy");
         });
 };
 
@@ -519,12 +523,12 @@ function createViz2() {
     let svgE2 = d3.select("#f2").append("svg");
     svgE2.attr("width", MAP_W);
     svgE2.attr("height", MAP_H);
+    ctx.myChart = echarts.init(document.getElementById('f2'));
 }
 
 
 function linePlot() {
     d = ctx.COUNTRY
-    ctx.myChart = echarts.init(document.getElementById('f2'));
     // ctx.myChart.clear();
     d3.csv("who_life_expectancy_all.csv").then(function (da) {
         if (ctx.FACTOR == "Life expectancy") {
@@ -789,10 +793,24 @@ function linePlot() {
             var colors = ['#7ab8cc', '#ff0000', '#808080'];
             var option = {
                 color: colors,
+
                 dataset: [
                     {
                         id: 'dataset_raw',
                         source: data
+                    },
+                    {
+                        id: 'male',
+                        fromDatasetId: 'dataset_raw',
+                        transform: {
+                            type: 'filter',
+                            config: {
+                                and: [
+                                    { dimension: 'Code', '=': d.properties.iso_a3_eh },
+                                    { dimension: 'Gender', '=': 'Male' }
+                                ]
+                            }
+                        }
                     },
                     {
                         id: 'female',
@@ -813,7 +831,7 @@ function linePlot() {
                     text: d.properties.name
                 },
                 legend: {
-                    data: ['female', ctx.FACTOR],
+                    data: ['male', 'female', ctx.FACTOR],
                 },
                 tooltip: {
                     trigger: 'item',
@@ -866,6 +884,28 @@ function linePlot() {
                 },
                 series: [
                     {
+                        name: 'male',
+                        datasetId: 'male',
+                        type: 'line',
+                        symbolSize: 0, // symbol的大小设置为0让线的小圆点不显示
+                        showSymbol: false, // 不显示symbol不显示
+                        lineStyle: {
+                            width: 0, // 线宽是0不显示线
+                            color: 'rgba(0, 0, 0, 0)' // 线的颜色是透明的
+                        },
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        yAxisIndex: '0',
+                        encode: {
+                            x: 'Year',
+                            y: 'Life expectancy'
+                        }
+                    },
+                    {
                         name: 'female',
                         datasetId: 'female',
                         type: 'line',
@@ -899,6 +939,7 @@ function linePlot() {
             var colors = ['#7ab8cc', '#ff0000', '#808080'];
             var option = {
                 color: colors,
+
                 dataset: [
                     {
                         id: 'dataset_raw',
@@ -917,13 +958,26 @@ function linePlot() {
                             }
                         }
                     },
+                    {
+                        id: 'female',
+                        fromDatasetId: 'dataset_raw',
+                        transform: {
+                            type: 'filter',
+                            config: {
+                                and: [
+                                    { dimension: 'Code', '=': d.properties.iso_a3_eh },
+                                    { dimension: 'Gender', '=': 'Female' }
+                                ]
+                            }
+                        }
+                    },
                 ],
 
                 title: {
                     text: d.properties.name
                 },
                 legend: {
-                    data: ['male', ctx.FACTOR],
+                    data: ['male', 'female', ctx.FACTOR],
                 },
                 tooltip: {
                     trigger: 'item',
@@ -992,8 +1046,30 @@ function linePlot() {
                         }
                     },
                     {
+                        name: 'female',
+                        datasetId: 'female',
+                        type: 'line',
+                        symbolSize: 0,
+                        showSymbol: false, 
+                        lineStyle: {
+                            width: 0, 
+                            color: 'rgba(0, 0, 0, 0)'
+                        },
+                        label: {
+                            normal: {
+                                show: true,
+                                position: 'top'
+                            }
+                        },
+                        yAxisIndex: '0',
+                        encode: {
+                            x: 'Year',
+                            y: 'Life expectancy'
+                        }
+                    },
+                    {
                         name: ctx.FACTOR,
-                        datasetId: 'male',
+                        datasetId: 'female',
                         type: 'bar',
                         barMaxWidth: '20%',
                         yAxisIndex: '1',
@@ -1117,7 +1193,7 @@ function ScattorPlot() {
             return tooltip.style('top', (event.pageY - 50) + 'px').style('left', (event.pageX + 50) + 'px');
         })
         .on("mouseout", function () { d3.select(this).attr("r", 1); return tooltip.style("visibility", "hidden"); })
-        .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY) });
+        .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
 
     let scatterGroups2 =
         ctx.bounds
@@ -1142,7 +1218,7 @@ function ScattorPlot() {
                 return tooltip.style('top', (event.pageY - 50) + 'px').style('left', (event.pageX + 50) + 'px');
             })
             .on("mouseout", function () { d3.select(this).attr("r", 1); return tooltip.style("visibility", "hidden"); })
-            .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY) });
+            .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
 
     ctx.xAxis = ctx.bounds.append('g')
     ctx.xAxis.append('text')
