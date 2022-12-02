@@ -1,3 +1,374 @@
+const continents = [
+    "Africa",
+    "Americas",
+    "Asia",
+    "Europe",
+    "Latin America and the Caribbean",
+    "Northern America",
+    "Oceania"
+];
+
+
+const chartSettings = {
+    width: 500,
+    height: 400,
+    padding: 40,
+    titlePadding: 5,
+    columnPadding: 0.4,
+    ticksInXAxis: 5,
+    duration: 3500,
+  };
+
+function createViz4(){
+    let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
+    svgE2.attr("width", 700);
+    svgE2.attr("height", 400);
+    let container = svgE2.append("g").attr("class", "chart-container");
+    container.append("text").attr("class", "chart-title");
+    container.append("g").attr("class", "x-axis");
+    container.append("g").attr("class", "y-axis");
+    container.append("g").attr("class", "columns");
+    container.append("text").attr("class", "current-date");
+}
+
+
+// function generateDataSets() {
+//     createViz4();
+//     dataSets = []
+//     d3.csv("continent.csv").then(function (data) {
+//         for (let j = 0; j < 70; j++) {
+//             dataSets.push({
+//                 date: data[j].year,
+//                 dataSet: continents.map((continent, index) => ({
+//                     name: continent, 
+//                     value: data[index * 70 + j].le
+//                 }))
+//             });
+//         }
+//     });
+//     return dataSets;
+// }
+
+function generateDataSets() {
+    createViz4();
+    const dataSets = [];
+    const currentYear = 2019;
+    const maxLimitForValue = 79.224;
+    const minLimitForValue = 26.4;
+    for (let i = 0; i < 100; i++) {
+        dataSets.push({
+            date: currentYear - (100 - (i + 1)),
+            dataSet: continents.map((continent) => ({
+                name: continent,
+                value:
+                    Math.random() * (maxLimitForValue - minLimitForValue) +
+                    minLimitForValue
+            }))
+        });
+    }
+    console.log(dataSets)
+    return dataSets;
+}
+
+
+function BarChartRace(chartId) {
+
+  chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 2;
+  chartSettings.innerHeight = chartSettings.height - chartSettings.padding * 2;
+
+  const chartDataSets = [];
+  let chartTransition;
+  let timerStart, timerEnd;
+  let currentDataSetIndex = 0;
+  let elapsedTime = chartSettings.duration;
+
+  const chartContainer = d3.select(`#${chartId} .chart-container`);
+  const xAxisContainer = d3.select(`#${chartId} .x-axis`);
+  const yAxisContainer = d3.select(`#${chartId} .y-axis`);
+
+  const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth]);
+
+  const yAxisScale = d3
+    .scaleBand()
+    .range([0, chartSettings.innerHeight])
+    .padding(chartSettings.columnPadding);
+
+  d3.select(`#${chartId}`)
+    .attr("width", chartSettings.width)
+    .attr("height", chartSettings.height);
+
+  chartContainer.attr(
+    "transform",
+    `translate(${chartSettings.padding} ${chartSettings.padding})`
+  );
+
+  chartContainer
+    .select(".current-date")
+    .attr(
+      "transform",
+      `translate(${chartSettings.innerWidth} ${chartSettings.innerHeight})`
+    );
+
+  function draw({ dataSet, date: currentDate }, transition) {
+    const { innerHeight, ticksInXAxis, titlePadding } = chartSettings;
+    const dataSetDescendingOrder = dataSet.sort(
+      ({ value: firstValue }, { value: secondValue }) =>
+        secondValue - firstValue
+    );
+
+    chartContainer.select(".current-date").text(currentDate);
+
+    xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
+    yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
+
+    xAxisContainer
+      .transition(transition)
+      .call(d3.axisTop(xAxisScale).ticks(ticksInXAxis).tickSize(-innerHeight));
+
+    yAxisContainer
+      .transition(transition)
+      .call(d3.axisLeft(yAxisScale).tickSize(0));
+
+    // The general update Pattern in d3.js
+
+    // Data Binding
+    const barGroups = chartContainer
+      .select(".columns")
+      .selectAll("g.column-container")
+      .data(dataSetDescendingOrder, ({ name }) => name);
+
+    // Enter selection
+    const barGroupsEnter = barGroups
+      .enter()
+      .append("g")
+      .attr("class", "column-container")
+      .attr("transform", `translate(0,${innerHeight})`);
+
+    barGroupsEnter
+      .append("rect")
+      .attr("class", "column-rect")
+      .attr("width", 0)
+      .style("fill", "blue")
+      .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
+
+    barGroupsEnter
+      .append("text")
+      .attr("class", "column-title")
+      .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
+      .attr("x", -titlePadding)
+      .text(({ name }) => name);
+
+    barGroupsEnter
+      .append("text")
+      .attr("class", "column-value")
+      .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
+      .attr("x", titlePadding)
+      .text(0);
+
+    // Update selection
+    const barUpdate = barGroupsEnter.merge(barGroups);
+
+    barUpdate
+      .transition(transition)
+      .attr("transform", ({ name }) => `translate(0,${yAxisScale(name)})`)
+      .attr("fill", "normal");
+
+    barUpdate
+      .select(".column-rect")
+      .transition(transition)
+      .attr("width", ({ value }) => xAxisScale(value));
+
+    barUpdate
+      .select(".column-title")
+      .transition(transition)
+      .attr("x", ({ value }) => xAxisScale(value) - titlePadding);
+
+    barUpdate
+      .select(".column-value")
+      .transition(transition)
+      .attr("x", ({ value }) => xAxisScale(value) + titlePadding)
+      .tween("text", function ({ value }) {
+        const interpolateStartValue =
+          elapsedTime === chartSettings.duration
+            ? this.currentValue || 0
+            : +this.innerHTML;
+
+        const interpolate = d3.interpolate(interpolateStartValue, value);
+        this.currentValue = value;
+
+        return function (t) {
+          d3.select(this).text(Math.ceil(interpolate(t)));
+        };
+      });
+
+    // Exit selection
+    const bodyExit = barGroups.exit();
+
+    bodyExit
+      .transition(transition)
+      .attr("transform", `translate(0,${innerHeight})`)
+      .on("end", function () {
+        d3.select(this).attr("fill", "none");
+      });
+
+    bodyExit.select(".column-title").transition(transition).attr("x", 0);
+
+    bodyExit.select(".column-rect").transition(transition).attr("width", 0);
+
+    bodyExit
+      .select(".column-value")
+      .transition(transition)
+      .attr("x", titlePadding)
+      .tween("text", function () {
+        const interpolate = d3.interpolate(this.currentValue, 0);
+        this.currentValue = 0;
+
+        return function (t) {
+          d3.select(this).text(Math.ceil(interpolate(t)));
+        };
+      });
+
+    return this;
+  }
+
+  function addDataset(dataSet) {
+    chartDataSets.push(dataSet);
+
+    return this;
+  }
+
+  function addDatasets(dataSets) {
+    chartDataSets.push.apply(chartDataSets, dataSets);
+
+    return this;
+  }
+
+  function setTitle(title) {
+    d3.select(".chart-title")
+      .attr("x", chartSettings.width / 2)
+      .attr("y", -chartSettings.padding / 2)
+      .text(title);
+
+    return this;
+  }
+
+  /* async function render() {
+    for (const chartDataSet of chartDataSets) {
+      chartTransition = chartContainer
+        .transition()
+        .duration(chartSettings.duration)
+        .ease(d3.easeLinear);
+
+      draw(chartDataSet, chartTransition);
+
+      await chartTransition.end();
+    }
+  } */
+
+  async function render(index = 0) {
+    currentDataSetIndex = index;
+    timerStart = d3.now();
+
+    chartTransition = chartContainer
+      .transition()
+      .duration(elapsedTime)
+      .ease(d3.easeLinear)
+      .on("end", () => {
+        if (index < chartDataSets.length) {
+          elapsedTime = chartSettings.duration;
+          render(index + 1);
+        } else {
+          d3.select("button").text("Play");
+        }
+      })
+      .on("interrupt", () => {
+        timerEnd = d3.now();
+      });
+
+    if (index < chartDataSets.length) {
+      draw(chartDataSets[index], chartTransition);
+    }
+
+    return this;
+  }
+
+  function stop() {
+    d3.select(`#${chartId}`).selectAll("*").interrupt();
+
+    return this;
+  }
+
+  function start() {
+    elapsedTime -= timerEnd - timerStart;
+
+    render(currentDataSetIndex);
+
+    return this;
+  }
+
+  return {
+    addDataset,
+    addDatasets,
+    render,
+    setTitle,
+    start,
+    stop
+  };
+}
+
+
+
+
+const myChart_fig4 = new BarChartRace("bar-chart-race");
+
+myChart_fig4
+  .setTitle("Bar Chart Race Title")
+  .addDatasets(generateDataSets())
+  .render();
+
+d3.select("#btn2").on("click", function() {
+  if (this.innerHTML === "Stop") {
+    this.innerHTML = "Resume";
+    myChart_fig4.stop();
+  } else if (this.innerHTML === "Resume") {
+    this.innerHTML = "Stop";
+    myChart_fig4.start();
+  } else {
+    this.innerHTML = "Stop";
+    myChart_fig4.render();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////stop stop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const MAP_W = 0.5 * window.innerWidth;
 const MAP_H = 0.5 * window.innerHeight;
 
@@ -38,7 +409,7 @@ const ctx = {
     undefinedColor: "#AAA",
     YEAR: "2015",
     panZoomMode: true,
-    TRANSITION_DURATION: 3000,
+    TRANSITION_DURATION: 500,
     GENDER: "all",
     FACTOR: "Life expectancy",
     countries: [],
@@ -183,7 +554,8 @@ function createViz() {
     svgEl.attr("width", MAP_W);
     svgEl.attr("height", MAP_H);
     createViz2();
-    createViz3()
+    createViz3();
+    generateDataSets();
     loadData(svgEl);
 };
 
@@ -778,8 +1150,13 @@ function linePlot() {
                     {
                         name: ctx.FACTOR,
                         datasetId: 'female',
-                        type: 'bar',
-                        barMaxWidth: '20%',
+                        type: 'line',
+                        // label: {
+                        //     normal: {
+                        //         show: true,
+                        //         position: 'top'
+                        //     }
+                        // },
                         yAxisIndex: '1',
                         encode: {
                             x: 'Year',
@@ -924,8 +1301,14 @@ function linePlot() {
                     {
                         name: ctx.FACTOR,
                         datasetId: 'female',
-                        type: 'bar',
-                        barMaxWidth: '20%',
+                        type: 'line',
+                        // label: {
+                        //     normal: {
+                        //         show: true,
+                        //         position: 'top'
+                        //     }
+                        // },
+                        // barMaxWidth: '20%',
                         yAxisIndex: '1',
                         encode: {
                             x: 'Year',
@@ -1070,8 +1453,15 @@ function linePlot() {
                     {
                         name: ctx.FACTOR,
                         datasetId: 'female',
-                        type: 'bar',
-                        barMaxWidth: '20%',
+                        name: ctx.FACTOR,
+                        datasetId: 'female',
+                        type: 'line',
+                        // label: {
+                        //     normal: {
+                        //         show: true,
+                        //         position: 'top'
+                        //     }
+                        // },
                         yAxisIndex: '1',
                         encode: {
                             x: 'Year',
@@ -1368,9 +1758,12 @@ function ScattorPlot() {
 // }
 
 function animation(){
-    if(ctx.YEAR == 2020){
-        ctx.YEAR = 2000
-    }
-    ctx.YEAR = parseInt(ctx.YEAR) + 1;
-    ScatterChange();
+    setInterval(function(){
+        if(ctx.YEAR == 2019){
+            ctx.YEAR = 2000
+        }
+        ctx.YEAR = parseInt(ctx.YEAR) + 1;
+        ScatterChange();}
+    , 1000)
+
 }
