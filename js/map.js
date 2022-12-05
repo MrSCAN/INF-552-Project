@@ -17,9 +17,9 @@ const chartSettings = {
     columnPadding: 0.4,
     ticksInXAxis: 5,
     duration: 3500,
-  };
+};
 
-function createViz4(){
+function createViz4() {
     let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
     svgE2.attr("width", 700);
     svgE2.attr("height", 400);
@@ -66,254 +66,254 @@ function generateDataSets() {
             }))
         });
     }
-    console.log(dataSets)
+    // console.log(dataSets)
     return dataSets;
 }
 
 
 function BarChartRace(chartId) {
 
-  chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 2;
-  chartSettings.innerHeight = chartSettings.height - chartSettings.padding * 2;
+    chartSettings.innerWidth = chartSettings.width - chartSettings.padding * 2;
+    chartSettings.innerHeight = chartSettings.height - chartSettings.padding * 2;
 
-  const chartDataSets = [];
-  let chartTransition;
-  let timerStart, timerEnd;
-  let currentDataSetIndex = 0;
-  let elapsedTime = chartSettings.duration;
+    const chartDataSets = [];
+    let chartTransition;
+    let timerStart, timerEnd;
+    let currentDataSetIndex = 0;
+    let elapsedTime = chartSettings.duration;
 
-  const chartContainer = d3.select(`#${chartId} .chart-container`);
-  const xAxisContainer = d3.select(`#${chartId} .x-axis`);
-  const yAxisContainer = d3.select(`#${chartId} .y-axis`);
+    const chartContainer = d3.select(`#${chartId} .chart-container`);
+    const xAxisContainer = d3.select(`#${chartId} .x-axis`);
+    const yAxisContainer = d3.select(`#${chartId} .y-axis`);
 
-  const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth]);
+    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth]);
 
-  const yAxisScale = d3
-    .scaleBand()
-    .range([0, chartSettings.innerHeight])
-    .padding(chartSettings.columnPadding);
+    const yAxisScale = d3
+        .scaleBand()
+        .range([0, chartSettings.innerHeight])
+        .padding(chartSettings.columnPadding);
 
-  d3.select(`#${chartId}`)
-    .attr("width", chartSettings.width)
-    .attr("height", chartSettings.height);
+    d3.select(`#${chartId}`)
+        .attr("width", chartSettings.width)
+        .attr("height", chartSettings.height);
 
-  chartContainer.attr(
-    "transform",
-    `translate(${chartSettings.padding} ${chartSettings.padding})`
-  );
-
-  chartContainer
-    .select(".current-date")
-    .attr(
-      "transform",
-      `translate(${chartSettings.innerWidth} ${chartSettings.innerHeight})`
+    chartContainer.attr(
+        "transform",
+        `translate(${chartSettings.padding} ${chartSettings.padding})`
     );
 
-  function draw({ dataSet, date: currentDate }, transition) {
-    const { innerHeight, ticksInXAxis, titlePadding } = chartSettings;
-    const dataSetDescendingOrder = dataSet.sort(
-      ({ value: firstValue }, { value: secondValue }) =>
-        secondValue - firstValue
-    );
+    chartContainer
+        .select(".current-date")
+        .attr(
+            "transform",
+            `translate(${chartSettings.innerWidth} ${chartSettings.innerHeight})`
+        );
 
-    chartContainer.select(".current-date").text(currentDate);
+    function draw({ dataSet, date: currentDate }, transition) {
+        const { innerHeight, ticksInXAxis, titlePadding } = chartSettings;
+        const dataSetDescendingOrder = dataSet.sort(
+            ({ value: firstValue }, { value: secondValue }) =>
+                secondValue - firstValue
+        );
 
-    xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
-    yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
+        chartContainer.select(".current-date").text(currentDate);
 
-    xAxisContainer
-      .transition(transition)
-      .call(d3.axisTop(xAxisScale).ticks(ticksInXAxis).tickSize(-innerHeight));
+        xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
+        yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
 
-    yAxisContainer
-      .transition(transition)
-      .call(d3.axisLeft(yAxisScale).tickSize(0));
+        xAxisContainer
+            .transition(transition)
+            .call(d3.axisTop(xAxisScale).ticks(ticksInXAxis).tickSize(-innerHeight));
 
-    // The general update Pattern in d3.js
+        yAxisContainer
+            .transition(transition)
+            .call(d3.axisLeft(yAxisScale).tickSize(0));
 
-    // Data Binding
-    const barGroups = chartContainer
-      .select(".columns")
-      .selectAll("g.column-container")
-      .data(dataSetDescendingOrder, ({ name }) => name);
+        // The general update Pattern in d3.js
 
-    // Enter selection
-    const barGroupsEnter = barGroups
-      .enter()
-      .append("g")
-      .attr("class", "column-container")
-      .attr("transform", `translate(0,${innerHeight})`);
+        // Data Binding
+        const barGroups = chartContainer
+            .select(".columns")
+            .selectAll("g.column-container")
+            .data(dataSetDescendingOrder, ({ name }) => name);
 
-    barGroupsEnter
-      .append("rect")
-      .attr("class", "column-rect")
-      .attr("width", 0)
-      .style("fill", "blue")
-      .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
+        // Enter selection
+        const barGroupsEnter = barGroups
+            .enter()
+            .append("g")
+            .attr("class", "column-container")
+            .attr("transform", `translate(0,${innerHeight})`);
 
-    barGroupsEnter
-      .append("text")
-      .attr("class", "column-title")
-      .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
-      .attr("x", -titlePadding)
-      .text(({ name }) => name);
+        barGroupsEnter
+            .append("rect")
+            .attr("class", "column-rect")
+            .attr("width", 0)
+            .style("fill", "blue")
+            .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
 
-    barGroupsEnter
-      .append("text")
-      .attr("class", "column-value")
-      .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
-      .attr("x", titlePadding)
-      .text(0);
+        barGroupsEnter
+            .append("text")
+            .attr("class", "column-title")
+            .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
+            .attr("x", -titlePadding)
+            .text(({ name }) => name);
 
-    // Update selection
-    const barUpdate = barGroupsEnter.merge(barGroups);
+        barGroupsEnter
+            .append("text")
+            .attr("class", "column-value")
+            .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
+            .attr("x", titlePadding)
+            .text(0);
 
-    barUpdate
-      .transition(transition)
-      .attr("transform", ({ name }) => `translate(0,${yAxisScale(name)})`)
-      .attr("fill", "normal");
+        // Update selection
+        const barUpdate = barGroupsEnter.merge(barGroups);
 
-    barUpdate
-      .select(".column-rect")
-      .transition(transition)
-      .attr("width", ({ value }) => xAxisScale(value));
+        barUpdate
+            .transition(transition)
+            .attr("transform", ({ name }) => `translate(0,${yAxisScale(name)})`)
+            .attr("fill", "normal");
 
-    barUpdate
-      .select(".column-title")
-      .transition(transition)
-      .attr("x", ({ value }) => xAxisScale(value) - titlePadding);
+        barUpdate
+            .select(".column-rect")
+            .transition(transition)
+            .attr("width", ({ value }) => xAxisScale(value));
 
-    barUpdate
-      .select(".column-value")
-      .transition(transition)
-      .attr("x", ({ value }) => xAxisScale(value) + titlePadding)
-      .tween("text", function ({ value }) {
-        const interpolateStartValue =
-          elapsedTime === chartSettings.duration
-            ? this.currentValue || 0
-            : +this.innerHTML;
+        barUpdate
+            .select(".column-title")
+            .transition(transition)
+            .attr("x", ({ value }) => xAxisScale(value) - titlePadding);
 
-        const interpolate = d3.interpolate(interpolateStartValue, value);
-        this.currentValue = value;
+        barUpdate
+            .select(".column-value")
+            .transition(transition)
+            .attr("x", ({ value }) => xAxisScale(value) + titlePadding)
+            .tween("text", function ({ value }) {
+                const interpolateStartValue =
+                    elapsedTime === chartSettings.duration
+                        ? this.currentValue || 0
+                        : +this.innerHTML;
 
-        return function (t) {
-          d3.select(this).text(Math.ceil(interpolate(t)));
-        };
-      });
+                const interpolate = d3.interpolate(interpolateStartValue, value);
+                this.currentValue = value;
 
-    // Exit selection
-    const bodyExit = barGroups.exit();
+                return function (t) {
+                    d3.select(this).text(Math.ceil(interpolate(t)));
+                };
+            });
 
-    bodyExit
-      .transition(transition)
-      .attr("transform", `translate(0,${innerHeight})`)
-      .on("end", function () {
-        d3.select(this).attr("fill", "none");
-      });
+        // Exit selection
+        const bodyExit = barGroups.exit();
 
-    bodyExit.select(".column-title").transition(transition).attr("x", 0);
+        bodyExit
+            .transition(transition)
+            .attr("transform", `translate(0,${innerHeight})`)
+            .on("end", function () {
+                d3.select(this).attr("fill", "none");
+            });
 
-    bodyExit.select(".column-rect").transition(transition).attr("width", 0);
+        bodyExit.select(".column-title").transition(transition).attr("x", 0);
 
-    bodyExit
-      .select(".column-value")
-      .transition(transition)
-      .attr("x", titlePadding)
-      .tween("text", function () {
-        const interpolate = d3.interpolate(this.currentValue, 0);
-        this.currentValue = 0;
+        bodyExit.select(".column-rect").transition(transition).attr("width", 0);
 
-        return function (t) {
-          d3.select(this).text(Math.ceil(interpolate(t)));
-        };
-      });
+        bodyExit
+            .select(".column-value")
+            .transition(transition)
+            .attr("x", titlePadding)
+            .tween("text", function () {
+                const interpolate = d3.interpolate(this.currentValue, 0);
+                this.currentValue = 0;
 
-    return this;
-  }
+                return function (t) {
+                    d3.select(this).text(Math.ceil(interpolate(t)));
+                };
+            });
 
-  function addDataset(dataSet) {
-    chartDataSets.push(dataSet);
-
-    return this;
-  }
-
-  function addDatasets(dataSets) {
-    chartDataSets.push.apply(chartDataSets, dataSets);
-
-    return this;
-  }
-
-  function setTitle(title) {
-    d3.select(".chart-title")
-      .attr("x", chartSettings.width / 2)
-      .attr("y", -chartSettings.padding / 2)
-      .text(title);
-
-    return this;
-  }
-
-  /* async function render() {
-    for (const chartDataSet of chartDataSets) {
-      chartTransition = chartContainer
-        .transition()
-        .duration(chartSettings.duration)
-        .ease(d3.easeLinear);
-
-      draw(chartDataSet, chartTransition);
-
-      await chartTransition.end();
+        return this;
     }
-  } */
 
-  async function render(index = 0) {
-    currentDataSetIndex = index;
-    timerStart = d3.now();
+    function addDataset(dataSet) {
+        chartDataSets.push(dataSet);
 
-    chartTransition = chartContainer
-      .transition()
-      .duration(elapsedTime)
-      .ease(d3.easeLinear)
-      .on("end", () => {
+        return this;
+    }
+
+    function addDatasets(dataSets) {
+        chartDataSets.push.apply(chartDataSets, dataSets);
+
+        return this;
+    }
+
+    function setTitle(title) {
+        d3.select(".chart-title")
+            .attr("x", chartSettings.width / 2)
+            .attr("y", -chartSettings.padding / 2)
+            .text(title);
+
+        return this;
+    }
+
+    /* async function render() {
+      for (const chartDataSet of chartDataSets) {
+        chartTransition = chartContainer
+          .transition()
+          .duration(chartSettings.duration)
+          .ease(d3.easeLinear);
+  
+        draw(chartDataSet, chartTransition);
+  
+        await chartTransition.end();
+      }
+    } */
+
+    async function render(index = 0) {
+        currentDataSetIndex = index;
+        timerStart = d3.now();
+
+        chartTransition = chartContainer
+            .transition()
+            .duration(elapsedTime)
+            .ease(d3.easeLinear)
+            .on("end", () => {
+                if (index < chartDataSets.length) {
+                    elapsedTime = chartSettings.duration;
+                    render(index + 1);
+                } else {
+                    d3.select("button").text("Play");
+                }
+            })
+            .on("interrupt", () => {
+                timerEnd = d3.now();
+            });
+
         if (index < chartDataSets.length) {
-          elapsedTime = chartSettings.duration;
-          render(index + 1);
-        } else {
-          d3.select("button").text("Play");
+            draw(chartDataSets[index], chartTransition);
         }
-      })
-      .on("interrupt", () => {
-        timerEnd = d3.now();
-      });
 
-    if (index < chartDataSets.length) {
-      draw(chartDataSets[index], chartTransition);
+        return this;
     }
 
-    return this;
-  }
+    function stop() {
+        d3.select(`#${chartId}`).selectAll("*").interrupt();
 
-  function stop() {
-    d3.select(`#${chartId}`).selectAll("*").interrupt();
+        return this;
+    }
 
-    return this;
-  }
+    function start() {
+        elapsedTime -= timerEnd - timerStart;
 
-  function start() {
-    elapsedTime -= timerEnd - timerStart;
+        render(currentDataSetIndex);
 
-    render(currentDataSetIndex);
+        return this;
+    }
 
-    return this;
-  }
-
-  return {
-    addDataset,
-    addDatasets,
-    render,
-    setTitle,
-    start,
-    stop
-  };
+    return {
+        addDataset,
+        addDatasets,
+        render,
+        setTitle,
+        start,
+        stop
+    };
 }
 
 
@@ -322,21 +322,21 @@ function BarChartRace(chartId) {
 const myChart_fig4 = new BarChartRace("bar-chart-race");
 
 myChart_fig4
-  .setTitle("Bar Chart Race Title")
-  .addDatasets(generateDataSets())
-  .render();
+    .setTitle("Bar Chart Race Title")
+    .addDatasets(generateDataSets())
+    .render();
 
-d3.select("#btn2").on("click", function() {
-  if (this.innerHTML === "Stop") {
-    this.innerHTML = "Resume";
-    myChart_fig4.stop();
-  } else if (this.innerHTML === "Resume") {
-    this.innerHTML = "Stop";
-    myChart_fig4.start();
-  } else {
-    this.innerHTML = "Stop";
-    myChart_fig4.render();
-  }
+d3.select("#btn2").on("click", function () {
+    if (this.innerHTML === "Stop") {
+        this.innerHTML = "Resume";
+        myChart_fig4.stop();
+    } else if (this.innerHTML === "Resume") {
+        this.innerHTML = "Stop";
+        myChart_fig4.start();
+    } else {
+        this.innerHTML = "Stop";
+        myChart_fig4.render();
+    }
 });
 
 
@@ -377,13 +377,13 @@ const MAP_H = 0.5 * window.innerHeight;
 const dimensions = {
     viewBox: '0, 0, 600,300',
     margin: {
-        top: 10,
+        top: 20,
         right: 10,
         bottom: 50,
-        left: 50,
+        left: 20,
     },
-    boundedWidth: 540,
-    boundedHeight: 240,
+    boundedWidth: 500,
+    boundedHeight: 200,
 }
 
 
@@ -407,7 +407,7 @@ const PROJECTIONS = {
 const ctx = {
     currentProj: PROJECTIONS.ER,
     undefinedColor: "#AAA",
-    YEAR: "2015",
+    YEAR: "2000",
     panZoomMode: true,
     TRANSITION_DURATION: 500,
     GENDER: "all",
@@ -416,6 +416,8 @@ const ctx = {
     SHOW_FIG3: false,
     SHOW_FIG2: false,
     min_max: {},
+    animation_year: "2000",
+    animation_button: true
 };
 
 
@@ -433,6 +435,7 @@ function makeMap(svgEl) {
     let scale4colorLegend = d3.scaleLinear()
         .domain(ctx.rangeOverAll)
         .rangeRound([250, 0]);
+
     legendG.selectAll("line")
         .data(range)
         .enter()
@@ -494,7 +497,7 @@ function addCountries() {
         .append("path")
         .attr("class", "country")
         .attr("d", geoGenrator)
-        .style("fill", d => { return getColor(d)})
+        .style("fill", d => { return getColor(d) })
         .style("pointer-events", "all")
         .on("mouseover", function (d, i) {
             d3.select(this).style("fill", "red").style("stoke", "black");
@@ -578,44 +581,44 @@ function initializeSelectBox() {
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 0)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 1)
             } else if (ctx.GENDER == 'female') {
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 1)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 0)
             } else {
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 1)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
-                    .duration(500)
+                    .duration(1000)
                     .style("fill-opacity", 1)
             }
-            if(ctx.SHOW_FIG2){
+            if (ctx.SHOW_FIG2) {
                 linePlot();
             }
         });
     d3.select("#factor")
         .on('change', function () {
             fig1Factor(this.value);
-            if(ctx.SHOW_FIG2){
+            if (ctx.SHOW_FIG2) {
                 linePlot();
             }
             if (!ctx.SHOW_FIG3) {
@@ -719,8 +722,13 @@ function fig1Factor(factor) {
             max = ctx.min_max.max_SR;
             break;
     }
-    ctx.dwScale4color = d3.scaleLinear().domain([min, max]).range([1, 0]);
-    ctx.fig3_scaler = d3.scaleLinear().domain([min, max]).range([0, dimensions.boundedWidth]);
+    if (factor == "GDP" || factor == "GNI") {
+        ctx.dwScale4color = d3.scaleLog().domain([min, max]).range([1, 0]);
+        ctx.fig3_scaler = d3.scaleLog().domain([min, max]).range([0, dimensions.boundedWidth]);
+    } else {
+        ctx.dwScale4color = d3.scaleLinear().domain([min, max]).range([1, 0]);
+        ctx.fig3_scaler = d3.scaleLinear().domain([min, max]).range([0, dimensions.boundedWidth]);
+    }
     ctx.rangeOverAll = [min, max];
     ctx.FACTOR = factor;
     updateMap();
@@ -730,6 +738,11 @@ function updateMap() {
     let scale4colorLegend = d3.scaleLinear()
         .domain(ctx.rangeOverAll)
         .rangeRound([250, 0]);
+    if (ctx.FACTOR == "GDP" || ctx.FACTOR == "GNI") {
+        scale4colorLegend = d3.scaleLog()
+            .domain(ctx.rangeOverAll)
+            .rangeRound([250, 0]);
+    }
     d3.select("#colorLegend>g")
         .transition()
         .duration(500)
@@ -1433,9 +1446,9 @@ function linePlot() {
                         datasetId: 'female',
                         type: 'line',
                         symbolSize: 0,
-                        showSymbol: false, 
+                        showSymbol: false,
                         lineStyle: {
-                            width: 0, 
+                            width: 0,
                             color: 'rgba(0, 0, 0, 0)'
                         },
                         label: {
@@ -1502,11 +1515,7 @@ function createViz3() {
 
 
 function ScatterChange() {
-    if (ctx.FACTOR == "GDP" || ctx.FACTOR == "GNI") {
-        xAxisGenerator = d3.axisBottom(ctx.fig3_scaler).ticks(4);
-    } else {
-        xAxisGenerator = d3.axisBottom(ctx.fig3_scaler);
-    }
+    xAxisGenerator = d3.axisBottom(ctx.fig3_scaler);
     ctx.bounds
         .select('#group1')
         .selectAll('circle')
@@ -1519,7 +1528,7 @@ function ScatterChange() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'male'));
         })
-        .attr('r', 1).attr('fill', 'blue');
+        .attr('r', 1).attr('fill', '#87cefa');
     ctx.bounds
         .select('#group2')
         .selectAll('circle')
@@ -1532,26 +1541,30 @@ function ScatterChange() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'female'));
         })
-        .attr('r', 1).attr('fill', 'red');
+        .attr('r', 1).attr('fill', '#eaa9ac');
     ctx.xAxis
         .call(xAxisGenerator)
         .style('transform', `translate(0,${dimensions.boundedHeight}px)`)
         .select('text')
         .attr('x', dimensions.boundedWidth / 2)
         .attr('y', dimensions.margin.bottom - 10)
-        .attr('fill', 'black')
-        .style('font-size', '1.4em')
+        .attr('fill', 'grey')
+        .style('font-size', '1em')
         .text(ctx.FACTOR)
+
+    d3.select("#yearname")
+    .text(ctx.YEAR)
 }
 
 
 
 function ScattorPlot() {
-    // if(ctx.FACTOR == 'Life expectancy'){
-    //     return;
-    // }
+
+    if (ctx.FACTOR == 'Life expectancy') {
+        return;
+    }
     x_scaler = ctx.fig3_scaler;
-    ctx.y_scaler = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
+    ctx.y_scaler = d3.scaleLinear().domain([0, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
 
     var tooltip = d3.select("body")
         .append("div")
@@ -1560,6 +1573,17 @@ function ScattorPlot() {
         .style("visibility", "hidden")
         .style('background-color', 'Gainsboro')
         .text("a simple tooltip");
+
+    
+    let colorGender = ctx.bounds.append('g')
+    .attr("id", "colorGender")
+    .attr("opacity", 1)
+    colorGender.append("rect").attr("transform", "translate(525, 0)").attr("width",40).attr("height",15).attr("fill","grey").attr("opacity", 0.5).attr("stroke","black");
+    colorGender.append("text").attr("id","yearname").attr("transform", "translate(532, 10)").text(ctx.YEAR).attr("fill", "black").attr("font-size", 10);
+    colorGender.append("rect").attr("transform", "translate(520, 20)").attr("width",8).attr("height",8).attr("fill",'#87cefa');
+    colorGender.append("text").attr("transform", "translate(535, 26)").text("male").attr("fill", "black").attr("font-size", 8);
+    colorGender.append("rect").attr("transform", "translate(520, 30)").attr("width",8).attr("height",8).attr("fill",'#eaa9ac');
+    colorGender.append("text").attr("transform", "translate(535, 36)").text("female").attr("fill", "black").attr("font-size", 8);
 
     let scatterGroups = ctx.bounds
         .select('#group1')
@@ -1574,7 +1598,7 @@ function ScattorPlot() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'male'));
         })
-        .attr('r', 1).attr('fill', 'blue')
+        .attr('r', 1).attr('fill', '#87cefa')
         .on("mouseover", function (d, i) {
             d3.select(this).attr("r", 5).style("stoke", "black");
             return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"], ctx.YEAR, ctx.FACTOR, ctx.GENDER) + "</p>");
@@ -1599,7 +1623,7 @@ function ScattorPlot() {
             .attr('cy', function (d) {
                 return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'female'));
             })
-            .attr('r', 1).attr('fill', 'red')
+            .attr('r', 1).attr('fill', '#eaa9ac')
             .on("mouseover", function (d, i) {
                 d3.select(this).attr("r", 5).style("stoke", "black");
                 return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"], ctx.YEAR, ctx.FACTOR, ctx.GENDER) + "</p>");
@@ -1615,155 +1639,56 @@ function ScattorPlot() {
     ctx.yAxis = ctx.bounds.append('g')
     ctx.yAxis.append('text')
     if (ctx.FACTOR == "GDP" || ctx.FACTOR == "GNI") {
-        xAxisGenerator = d3.axisBottom(ctx.fig3_scaler).ticks(4);
+        xAxisGenerator = d3.axisBottom(ctx.fig3_scaler)
     } else {
         xAxisGenerator = d3.axisBottom(ctx.fig3_scaler);
     }
     ctx.xAxis
         .call(xAxisGenerator)
         .style('transform', `translate(0,${dimensions.boundedHeight}px)`)
+        .attr('stoke', 'grey')
         .select('text')
         .attr('x', dimensions.boundedWidth / 2)
         .attr('y', dimensions.margin.bottom - 10)
-        .attr('fill', 'black')
-        .style('font-size', '1.4em')
+        .attr('fill', 'grey')
+        .style('font-size', '  1em')
         .text(ctx.FACTOR)
-    const yAxisGenerator = d3.axisLeft(ctx.y_scaler).ticks(4)
+    const yAxisGenerator = d3.axisLeft(ctx.y_scaler).tickSize(-dimensions.boundedWidth)
+
     ctx.yAxis
         .call(yAxisGenerator)
+        .call(g => g.select(".domain")
+        .remove())
+        .call(g => g.selectAll(".tick:not(:first-of-type) line")
+        .attr("stroke-opacity", 0.5)
+        .attr("stroke-dasharray", "2,2"))
         .select('text')
-        .attr('x', -dimensions.boundedHeight / 2)
-        .attr('y', -dimensions.margin.left + 10)
-        .attr('fill', 'black')
-        .style('font-size', '1.4em')
+        .style('transform', 'translate(0,0)')
         .text('Life Expectancy')
-        .style('transform', 'rotate(-90deg)')
         .style('text-anchor', 'middle')
-
-    // ctx.myChart2 = echarts.init(document.getElementById('f3'));
-    // d3.csv("who_life_expectancy_all.csv").then(function (da) {
-    //     data = da;
-    //     var colors = ['#0000ff', '#ff0000', '#808080'];
-    //     var option = {
-    //         color: colors,
-    //         tooltip: {
-    //             trigger: 'axis',
-    //             axisPointer: {
-    //                 type: 'cross'
-    //             }
-    //         },
-    //         title: {
-    //             text: 'All coutries Life Expectancy versus' + ctx.FACTOR,
-    //             left: 'center',
-    //             top: 16
-    //         },
-    //         dataset: [
-    //             {
-    //                 id: 'dataset_raw',
-    //                 source: data
-    //             },
-    //             {
-    //                 id: 'male',
-    //                 fromDatasetId: 'dataset_raw',
-    //                 transform: {
-    //                     type: 'filter',
-    //                     config: {
-    //                         and: [
-    //                             { dimension: 'Year', '=': ctx.YEAR },
-    //                             { dimension: 'Gender', '=': 'Male' }
-    //                         ]
-    //                     }
-    //                 }
-    //             },
-    //         ],
-    //         legend: {
-    //             data: ['male', 'female'],
-    //         },
-    //         xAxis: {
-    //             splitLine: {
-    //                 lineStyle: {
-    //                     type: 'dashed'
-    //                 }
-    //             },
-    //         },
-
-    //         yAxis: {
-    //             min: 30,
-    //             splitLine: {
-    //                 lineStyle: {
-    //                     type: 'dashed'
-    //                 }
-    //             }
-    //         },
-    //         series:
-    //         {
-    //             name: 'male',
-    //             datasetId: 'male',
-    //             type: 'scatter',
-    //             symbolSize: 3,
-    //             symbol: 'circle',
-    //             label: {
-    //                 normal: {
-    //                     position: 'top'
-    //                 }
-    //             },
-    //             yAxisIndex: '0',
-    //             encode: {
-    //                 x: ctx.FACTOR,
-    //                 y: 'Life expectancy'
-    //             }
-    //         },
-    //     };
-    //     ctx.myChart2.setOption(option, true);
-    // })
+        .attr("fill", "grey")
 
 
-};
+    
+}
 
-
-// function show_animation() {
-//     if (ctx.FACTOR == "GDP" || ctx.FACTOR == "GNI") {
-//         xAxisGenerator = d3.axisBottom(ctx.fig3_scaler).ticks(4);
-//     } else {
-//         xAxisGenerator = d3.axisBottom(ctx.fig3_scaler);
-//     }
-//     console.log(i)
-//     console.log(ctx.YEAR)
-//     console.log(i == ctx.YEAR)
-//     ctx.bounds
-//         .select('#group1')
-//         .selectAll('circle')
-//         .transition()
-//         .duration(1000)(o)
-//         .attr('cx', function (d) {
-//             return ctx.fig3_scaler(getValue(d, i, ctx.FACTOR, 'male'));
-//         })
-//         .attr('cy', function (d) {
-//             return ctx.y_scaler(getValue(d, i, 'Life expectancy', 'male'));
-//         })
-//         .attr('r', 1).attr('fill', 'blue');
-//     ctx.bounds
-//         .select('#group2')
-//         .selectAll('circle')
-//         .transition()
-//         .duration(1000)
-//         .attr('cx', function (d) {
-//             // console.log(d)
-//             return ctx.fig3_scaler(getValue(d, i, ctx.FACTOR, 'female'));
-//         })
-//         .attr('cy', function (d) {
-//             return ctx.y_scaler(getValue(d, i, 'Life expectancy', 'female'));
-//         })
-//         .attr('r', 1).attr('fill', 'red');
-// }
-
-function animation(){
-    setInterval(function(){
-        if(ctx.YEAR == 2019){
-            ctx.YEAR = 2000
+function animation() {
+    if (ctx.animation_button) {
+        console.log(1)
+        ctx.animation_year = ctx.YEAR;
+        ctx.animation = setInterval(function () {
+            if (ctx.YEAR == 2019) {
+                ctx.YEAR = 2000
+            }
+            ctx.YEAR = parseInt(ctx.YEAR) + 1;
+            ScatterChange();
         }
-        ctx.YEAR = parseInt(ctx.YEAR) + 1;
-        ScatterChange();}
-    , 1000)
-
+            , 2000)
+        ctx.animation_button = false;
+    } else {
+        ctx.YEAR = ctx.animation_year
+        clearInterval(ctx.animation);
+        ScatterChange();
+        ctx.animation_button = true
+    }
 }
