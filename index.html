@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="js/d3-geo-projection.v4.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.5.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script>
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
     <script type="text/javascript" src="js/echarts.js"></script>
     <script type="text/javascript" src="js/map.js"></script>
@@ -20,7 +23,7 @@
     </style>
     <title>Document</title>
 </head>
-<body onload="createViz()">
+<body onload="createViz(); ">
     <body>
     Year:
     <select id="year">
@@ -79,6 +82,8 @@
     <div id="f3">
         <button id="'btn" onclick = "animation()">animated</button>
     </div>
-    <div id="f4"></div>
+    <div id="f4">
+        <button id="'btn2" onclick = "animation()">stop</button>
+    </div>
 </body>
 </html>
