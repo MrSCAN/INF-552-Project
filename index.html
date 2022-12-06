@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="css/f4.css"> -->
     <script type="text/javascript" src="js/d3-geo-projection.v4.min.js"></script>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
@@ -19,7 +20,7 @@
         #f1 { background: rgb(255, 255, 255); top: 5%;   left: 0;   right: 50%; bottom: 40% }
         #f2 { background: rgb(255, 255, 255); top: 5%;   left: 50%; right: 0;   bottom: 50% }
         #f3 { background: rgb(255, 255, 255); top: 50%; left: 0;   right: 50%; bottom: 0}
-        #f4 { background: rgb(103, 123, 103); top: 50%; left: 50%; right: 0;   bottom: 0}
+        #f4 { background: rgb(254, 254, 254); top: 50%; left: 50%; right: 0;   bottom: 0}
     </style>
     <title>Document</title>
 </head>
@@ -80,10 +81,11 @@
     <div id="f1">Frame 1: world map</div>
     <div id="f2">Frame 2: Speed</Frame></Frame></div>
     <div id="f3">
-        <button id="'btn" onclick = "animation()">animated</button>
+        <button id="'btn" onclick = "animation()">Play</button>
     </div>
     <div id="f4">
-        <button id="'btn2" onclick = "animation()">stop</button>
+        <button id="btn2">Stop</button>
+        <!-- <button id="btn3">Current Year: <span class="current-date">Loading</span></button> -->
     </div>
 </body>
 </html>

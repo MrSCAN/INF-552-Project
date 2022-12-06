@@ -3,54 +3,59 @@ const continents = [
     "Americas",
     "Asia",
     "Europe",
-    "Latin America and the Caribbean",
+    "The Caribbean",
     "Northern America",
     "Oceania"
 ];
 
-
 const chartSettings = {
-    width: 500,
-    height: 400,
+    width: 0.5 * window.innerWidth - 20,
+    height: 0.5 * window.innerHeight - 20,
     padding: 40,
     titlePadding: 5,
     columnPadding: 0.4,
     ticksInXAxis: 5,
     duration: 3500,
+    color: [],
 };
+chartSettings.color =["green","red","yellow", "grey", "blue", "pink", "orange"];
 
-function createViz4() {
+function createNodes() {
     let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
-    svgE2.attr("width", 700);
-    svgE2.attr("height", 400);
+    svgE2.attr("width", chartSettings.width);
+    svgE2.attr("height", chartSettings.height);
     let container = svgE2.append("g").attr("class", "chart-container");
     container.append("text").attr("class", "chart-title");
     container.append("g").attr("class", "x-axis");
     container.append("g").attr("class", "y-axis");
     container.append("g").attr("class", "columns");
     container.append("text").attr("class", "current-date");
+
+    runBarChart();
 }
 
 
 // function generateDataSets() {
-//     createViz4();
-//     dataSets = []
-//     d3.csv("continent.csv").then(function (data) {
-//         for (let j = 0; j < 70; j++) {
-//             dataSets.push({
-//                 date: data[j].year,
-//                 dataSet: continents.map((continent, index) => ({
-//                     name: continent, 
-//                     value: data[index * 70 + j].le
-//                 }))
-//             });
-//         }
-//     });
+//     const dataSets = [];
+//     const currentYear = 2019;
+//     const maxLimitForValue = 79.224;
+//     const minLimitForValue = 26.4;
+//     for (let i = 0; i < 70; i++) {
+//         dataSets.push({
+//             date: currentYear - (70 - (i + 1)),
+//             dataSet: continents.map((continent) => ({
+//                 name: continent,
+//                 value:
+//                     Math.random() * (maxLimitForValue - minLimitForValue) +
+//                     minLimitForValue
+//             }))
+//         });
+//     }
 //     return dataSets;
 // }
 
 function generateDataSets() {
-    createViz4();
+
     const dataSets = [];
     const currentYear = 2019;
     const maxLimitForValue = 79.224;
@@ -86,27 +91,27 @@ function BarChartRace(chartId) {
     const xAxisContainer = d3.select(`#${chartId} .x-axis`);
     const yAxisContainer = d3.select(`#${chartId} .y-axis`);
 
-    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth]);
+    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth - chartSettings.padding]);
 
     const yAxisScale = d3
         .scaleBand()
-        .range([0, chartSettings.innerHeight])
+        .range([0, chartSettings.innerHeight-chartSettings.columnPadding])
         .padding(chartSettings.columnPadding);
 
     d3.select(`#${chartId}`)
-        .attr("width", chartSettings.width)
+        .attr("width", chartSettings.width- chartSettings.padding)
         .attr("height", chartSettings.height);
 
     chartContainer.attr(
         "transform",
-        `translate(${chartSettings.padding} ${chartSettings.padding})`
+        `translate(${chartSettings.padding*2} ${chartSettings.padding})`
     );
 
     chartContainer
         .select(".current-date")
         .attr(
             "transform",
-            `translate(${chartSettings.innerWidth} ${chartSettings.innerHeight})`
+            `translate(${chartSettings.innerWidth - chartSettings.padding*2} ${chartSettings.innerHeight/2})`
         );
 
     function draw({ dataSet, date: currentDate }, transition) {
@@ -148,15 +153,15 @@ function BarChartRace(chartId) {
             .append("rect")
             .attr("class", "column-rect")
             .attr("width", 0)
-            .style("fill", "blue")
+            .style("fill", (d)=>chartSettings.color[continents.indexOf(d.name)])
             .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
 
-        barGroupsEnter
-            .append("text")
-            .attr("class", "column-title")
-            .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
-            .attr("x", -titlePadding)
-            .text(({ name }) => name);
+        // barGroupsEnter
+        //     .append("text")
+        //     .attr("class", "column-title")
+        //     .attr("y", (yAxisScale.step() * (1 - chartSettings.columnPadding)) / 2)
+        //     .attr("x", -titlePadding)
+        //     .text(({ name }) => name);
 
         barGroupsEnter
             .append("text")
@@ -176,7 +181,8 @@ function BarChartRace(chartId) {
         barUpdate
             .select(".column-rect")
             .transition(transition)
-            .attr("width", ({ value }) => xAxisScale(value));
+            .attr("width", ({ value }) => xAxisScale(value))
+            .attr("fill", "normal");
 
         barUpdate
             .select(".column-title")
@@ -245,25 +251,12 @@ function BarChartRace(chartId) {
 
     function setTitle(title) {
         d3.select(".chart-title")
-            .attr("x", chartSettings.width / 2)
+            .attr("x", chartSettings.padding)
             .attr("y", -chartSettings.padding / 2)
             .text(title);
 
         return this;
     }
-
-    /* async function render() {
-      for (const chartDataSet of chartDataSets) {
-        chartTransition = chartContainer
-          .transition()
-          .duration(chartSettings.duration)
-          .ease(d3.easeLinear);
-  
-        draw(chartDataSet, chartTransition);
-  
-        await chartTransition.end();
-      }
-    } */
 
     async function render(index = 0) {
         currentDataSetIndex = index;
@@ -278,7 +271,7 @@ function BarChartRace(chartId) {
                     elapsedTime = chartSettings.duration;
                     render(index + 1);
                 } else {
-                    d3.select("button").text("Play");
+                    d3.select("#btn2").text("Play");
                 }
             })
             .on("interrupt", () => {
@@ -316,28 +309,26 @@ function BarChartRace(chartId) {
     };
 }
 
+function runBarChart(){
+    const f4 = new BarChartRace("bar-chart-race");
 
+    f4.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
+        .addDatasets(generateDataSets())
+        .render();
 
-
-const myChart_fig4 = new BarChartRace("bar-chart-race");
-
-myChart_fig4
-    .setTitle("Bar Chart Race Title")
-    .addDatasets(generateDataSets())
-    .render();
-
-d3.select("#btn2").on("click", function () {
-    if (this.innerHTML === "Stop") {
-        this.innerHTML = "Resume";
-        myChart_fig4.stop();
-    } else if (this.innerHTML === "Resume") {
-        this.innerHTML = "Stop";
-        myChart_fig4.start();
-    } else {
-        this.innerHTML = "Stop";
-        myChart_fig4.render();
-    }
-});
+    d3.select("#btn2").on("click", function () {
+        if (this.innerHTML === "Stop") {
+            this.innerHTML = "Resume";
+            f4.stop();
+        } else if (this.innerHTML === "Resume") {
+            this.innerHTML = "Stop";
+            f4.start();
+        } else {
+            this.innerHTML = "Stop";
+            f4.render();
+        }
+    });
+}
 
 
 
@@ -558,7 +549,7 @@ function createViz() {
     svgEl.attr("height", MAP_H);
     createViz2();
     createViz3();
-    generateDataSets();
+    createNodes();
     loadData(svgEl);
 };
 
