@@ -578,27 +578,29 @@ function initializeSelectBox() {
         .on('change', function () {
             fig1Gender(this.value);
             if (ctx.GENDER == 'male') {
+                console.log(1)
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 0)
+                    .style("fill-opacity", 1)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 1)
+                    .style("fill-opacity", 0)
             } else if (ctx.GENDER == 'female') {
+                console.log(2)
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 1)
+                    .style("fill-opacity", 0)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 0)
+                    .style("fill-opacity", 1)
             } else {
                 d3.select('#group1')
                     .selectAll('circle')
@@ -1564,7 +1566,7 @@ function ScattorPlot() {
         return;
     }
     x_scaler = ctx.fig3_scaler;
-    ctx.y_scaler = d3.scaleLinear().domain([0, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
+    ctx.y_scaler = d3.scaleLinear().domain([30, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
 
     var tooltip = d3.select("body")
         .append("div")
@@ -1683,7 +1685,7 @@ function animation() {
             ctx.YEAR = parseInt(ctx.YEAR) + 1;
             ScatterChange();
         }
-            , 2000)
+            , 1000)
         ctx.animation_button = false;
     } else {
         ctx.YEAR = ctx.animation_year
