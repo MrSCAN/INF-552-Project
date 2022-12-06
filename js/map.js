@@ -15,8 +15,9 @@ const chartSettings = {
     titlePadding: 5,
     columnPadding: 0.4,
     ticksInXAxis: 5,
-    duration: 3500,
+    duration: 500,
     color: [],
+    dataSets:[],
 };
 chartSettings.color =["green","red","yellow", "grey", "blue", "pink", "orange"];
 
@@ -30,50 +31,28 @@ function createNodes() {
     container.append("g").attr("class", "y-axis");
     container.append("g").attr("class", "columns");
     container.append("text").attr("class", "current-date");
-
-    runBarChart();
 }
 
+function loadContinents(){
+    d3.csv("continent.csv").then(function (data) {
+        generateDataSets(data);
+        runBarChart();
+    }).catch(function(error){console.log(error)});
+};
 
-function generateDataSets() {
-    const dataSets = [];
-    const currentYear = 2019;
-    const maxLimitForValue = 79.224;
-    const minLimitForValue = 26.4;
-    for (let i = 0; i < 70; i++) {
-        dataSets.push({
-            date: currentYear - (70 - (i + 1)),
-            dataSet: continents.map((continent) => ({
-                name: continent,
-                value:
-                    Math.random() * (maxLimitForValue - minLimitForValue) +
-                    minLimitForValue
-            }))
-        });
-    }
-    return dataSets;
+
+
+function generateDataSets(data) {
+        for (let j = 0; j < 70; j++) {
+            chartSettings.dataSets.push({
+                date: data[j].year,
+                dataSet: continents.map((continent, index) => ({
+                    name: continent, 
+                    value: data[index * 70 + j].le
+                }))
+            });
+        }
 }
-
-// function generateDataSets() {
-
-//     const dataSets = [];
-//     const currentYear = 2019;
-//     const maxLimitForValue = 79.224;
-//     const minLimitForValue = 26.4;
-//     for (let i = 0; i < 100; i++) {
-//         dataSets.push({
-//             date: currentYear - (100 - (i + 1)),
-//             dataSet: continents.map((continent) => ({
-//                 name: continent,
-//                 value:
-//                     Math.random() * (maxLimitForValue - minLimitForValue) +
-//                     minLimitForValue
-//             }))
-//         });
-//     }
-//     // console.log(dataSets)
-//     return dataSets;
-// }
 
 
 function BarChartRace(chartId) {
@@ -313,7 +292,7 @@ function runBarChart(){
     const f4 = new BarChartRace("bar-chart-race");
 
     f4.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
-        .addDatasets(generateDataSets())
+        .addDatasets(chartSettings.dataSets)
         .render();
 
     d3.select("#btn2").on("click", function () {
@@ -547,9 +526,10 @@ function createViz() {
     let svgEl = d3.select("#f1").append("svg");
     svgEl.attr("width", MAP_W);
     svgEl.attr("height", MAP_H);
+    createNodes();
+    loadContinents();
     createViz2();
     createViz3();
-    createNodes();
     loadData(svgEl);
 };
 
