@@ -35,34 +35,14 @@ function createNodes() {
 }
 
 
-// function generateDataSets() {
-//     const dataSets = [];
-//     const currentYear = 2019;
-//     const maxLimitForValue = 79.224;
-//     const minLimitForValue = 26.4;
-//     for (let i = 0; i < 70; i++) {
-//         dataSets.push({
-//             date: currentYear - (70 - (i + 1)),
-//             dataSet: continents.map((continent) => ({
-//                 name: continent,
-//                 value:
-//                     Math.random() * (maxLimitForValue - minLimitForValue) +
-//                     minLimitForValue
-//             }))
-//         });
-//     }
-//     return dataSets;
-// }
-
 function generateDataSets() {
-
     const dataSets = [];
     const currentYear = 2019;
     const maxLimitForValue = 79.224;
     const minLimitForValue = 26.4;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 70; i++) {
         dataSets.push({
-            date: currentYear - (100 - (i + 1)),
+            date: currentYear - (70 - (i + 1)),
             dataSet: continents.map((continent) => ({
                 name: continent,
                 value:
@@ -71,9 +51,29 @@ function generateDataSets() {
             }))
         });
     }
-    // console.log(dataSets)
     return dataSets;
 }
+
+// function generateDataSets() {
+
+//     const dataSets = [];
+//     const currentYear = 2019;
+//     const maxLimitForValue = 79.224;
+//     const minLimitForValue = 26.4;
+//     for (let i = 0; i < 100; i++) {
+//         dataSets.push({
+//             date: currentYear - (100 - (i + 1)),
+//             dataSet: continents.map((continent) => ({
+//                 name: continent,
+//                 value:
+//                     Math.random() * (maxLimitForValue - minLimitForValue) +
+//                     minLimitForValue
+//             }))
+//         });
+//     }
+//     // console.log(dataSets)
+//     return dataSets;
+// }
 
 
 function BarChartRace(chartId) {
@@ -91,7 +91,7 @@ function BarChartRace(chartId) {
     const xAxisContainer = d3.select(`#${chartId} .x-axis`);
     const yAxisContainer = d3.select(`#${chartId} .y-axis`);
 
-    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth - chartSettings.padding]);
+    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth - chartSettings.padding*4]);
 
     const yAxisScale = d3
         .scaleBand()
@@ -111,7 +111,7 @@ function BarChartRace(chartId) {
         .select(".current-date")
         .attr(
             "transform",
-            `translate(${chartSettings.innerWidth - chartSettings.padding*2} ${chartSettings.innerHeight/2})`
+            `translate(${chartSettings.innerWidth - chartSettings.padding*1.5} ${chartSettings.innerHeight/2})`
         );
 
     function draw({ dataSet, date: currentDate }, transition) {
