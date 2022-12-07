@@ -1,3 +1,5 @@
+/*Animated Continent Chart Starts Here*/
+
 const continents = [
     "Africa",
     "Americas",
@@ -19,8 +21,7 @@ const chartSettings = {
     color: [],
     dataSets:[],
 };
-// chartSettings.color =["green","red","yellow", "grey", "blue", "pink", "orange"];
-chartSettings.color = ["#00202e",  "#003f5c",  "#2c4875",  "#8a508f",  "#bc5090",  "#ff6361",  "#ff8531"];//,  #ffa600 and  #ffd380]
+chartSettings.color = ["#00202e",  "#003f5c",  "#2c4875",  "#8a508f",  "#bc5090",  "#ff6361",  "#ff8531"];
 
 function createNodes() {
     let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
@@ -309,7 +310,7 @@ function runBarChart(){
         }
     });
 }
-/////stop stop
+/*Animated Continent Chart Ends Here*/
 
 
 
@@ -320,425 +321,228 @@ function runBarChart(){
 
 
 
+/*Density Chart For Male, Female & All Data Distribution Starts Here*/
+const densityPlotData = {
+    width: 0.5 * window.innerWidth - 20,
+    height: 0.5 * window.innerHeight - 20,
+}
+function loadAllData(){
+    d3.csv("who_life_expectancy_all.csv").then(function(data){
+        initSVGcanvas(data);
+    }).catch(function(error){console.log(error)});
+};
 
+function createVizf32(){
+    var svgEl = d3.select("#f3").append("svg");
+    svgEl.attr("width", densityPlotData.width);
+    svgEl.attr("height", densityPlotData.height);
+    var rootG = svgEl.append("g").attr("id", "rootG");
+    // group for background elements (axes, labels)
+    rootG.append("g").attr("id", "bkgG");
+    loadAllData(svgEl);
+};
 
+/*-------------- Summary stats for box plot ------------------------*/
+/*-------------- see Instructions/Section 3 ----------------------*/
 
+function getSummaryStatistics(data){
+    return d3.rollup(data, function(d){
+        
+        let q1 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .25);
+        let median = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .5);
+        let q3 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .75);
+        let iqr = q3 - q1;
+        let min = d3.min(data, (d) => (d["Life expectancy"]));
+        let max = d3.max(data, (d) => (d["Life expectancy"]));
+        return({q1: q1, median: median, q3:q3, iqr: iqr, min: min, max: max})
+    });
+};
 
+/*-------------- kernel density estimator ------------------------*/
+/*-------------- see Instructions/Section 4 ----------------------*/
 
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(function(x) {
+      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+    });
+  };
+}
 
+function kernelEpanechnikov(k) {
+  return function(v) {
+    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+  };
+}
 
 
+function initSVGcanvas(whoData){  
+    let maxLe = d3.max(whoData, ((d) => parseFloat(d["Life expectancy"])));
 
+    densityPlotData.yScale = d3.scaleLinear().domain([0, maxLe]).range([densityPlotData.height-60, 20]);
 
 
 
+d3.select("#bkgG").append("g")
+  .attr("transform", "translate(50,0)")
+  .call(d3.axisLeft(densityPlotData.yScale).ticks(10))
+  .selectAll("text")
+  .style("text-anchor", "end");
 
+    // y-axis label
+d3.select("#bkgG")
+    .append("text")
+    .attr("y", 0)
+    .attr("x", 0)
+    .attr("transform", `rotate(-90) translate(-${densityPlotData.width/4},15)`)
+    .classed("axisLb", true)
+    .text("Life Expectancy");
 
 
 
+    gel = d3.select("g#rootG");
 
+    gel.append("g").attr("id", "maleFemaleData");
+    gel.append("g").attr("id", "femaleData");
+    gel.append("g").attr("id", "maleData");
 
 
+    let maleFemaleData = d3.select("#maleFemaleData");
+    let femaleData = d3.select("#femaleData");
+    let maleData = d3.select("#maleData");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ///Start Again
-
-// // const ctx = {
-// //     w: 820,
-// //     h: 720,
-// // };
-
-// // code for Section 4 (optional)
-// // data = array of exoplanets with their attributes
-// // pG = d3 reference to the <g> element
-// //      for the corresponding category of detection method
-// // function densityPlot(data, pG){
-// //     let calcTemps = data.map(function(p){return p[4];});
-// //     let temperatureScale = d3.scaleLinear()
-// //                              .domain(ctx.yScale.domain())
-// //                              .range(ctx.yScale.range());
-// //     let n = calcTemps.length,
-// //         density = kernelDensityEstimator(kernelEpanechnikov(7), temperatureScale.ticks(12))(calcTemps);
-// //     let maxDensity = d3.max(density, (d) => (d[4]));
-// //     let densityScale = d3.scaleLinear()
-// //             .domain([0, maxDensity])
-// //             .range([0, ctx.JITTER_W*0.8]);
-// //     // remove entries where y=0 to avoid unnecessarily-long tails
-// //     let i = density.length - 1;
-// //     let lastNonZeroBucket = -1;
-// //     while (i>=0){
-// //         // walk array backward, find last entry >0 at index n, keep n+1
-// //         if (density[i][1] > 0){
-// //             lastNonZeroBucket = i;
-// //             break;
-// //         }
-// //         i--;
-// //     }
-// //     if (lastNonZeroBucket != -1){
-// //         density = density.splice(0, lastNonZeroBucket+3);
-// //     }
-// //     // insert a point at 0,0 so that the path fill does not cross the curve
-// //     density.unshift([0,0]);
-// //     // now draw the density curve
-// //     // TBW ...
-// // };
-
-// function loadAllData(){
-//     d3.csv("who_life_expectancy_all.csv").then(function(data){
-//         console.log(`Exoplanet total count: ${data.length}`);
-//         // let leData = data.filter((d) => (parseFloat(d.temp_calculated) > 0));
-//         // data.forEach(
-//         //     (d) => {d.temp_calculated = parseFloat(d.temp_calculated);}
-//         // );
-//         // console.log(`Exoplanets with calculated temperature: ${planetsWithCalTemp.length}`);
-//         console.log(data);
-//         initSVGcanvas(data);
-//     }).catch(function(error){console.log(error)});
-// };
-
-// function createVizf32(){
-//     var svgEl = d3.select("#f3").append("svg");
-//     svgEl.attr("width", 500);
-//     svgEl.attr("height", 500);
-//     var rootG = svgEl.append("g").attr("id", "rootG");
-//     // group for background elements (axes, labels)
-//     rootG.append("g").attr("id", "bkgG");
-//     loadAllData(svgEl);
-// };
-
-// /*-------------- Summary stats for box plot ------------------------*/
-// /*-------------- see Instructions/Section 3 ----------------------*/
-
-// function getSummaryStatistics(data){
-//     return d3.rollup(data, function(d){
-//         let q1 = d3.quantile(d.map(function(p){return p[4];}).sort(d3.ascending), .25);
-//         let median = d3.quantile(d.map(function(p){return p[4];}).sort(d3.ascending), .5);
-//         let q3 = d3.quantile(d.map(function(p){return p[4];}).sort(d3.ascending), .75);
-//         let iqr = q3 - q1;
-//         let min = d3.min(data, (d) => (d[4]));
-//         let max = d3.max(data, (d) => (d[4]));
-//         return({q1: q1, median: median, q3:q3, iqr: iqr, min: min, max: max})
-//     });
-// };
-
-// /*-------------- kernel density estimator ------------------------*/
-// /*-------------- see Instructions/Section 4 ----------------------*/
-
-// function kernelDensityEstimator(kernel, X) {
-//   return function(V) {
-//     return X.map(function(x) {
-//       return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-//     });
-//   };
-// }
-
-// function kernelEpanechnikov(k) {
-//   return function(v) {
-//     return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-//   };
-// }
-
-
-// function initSVGcanvas(whoData){  
-//     let maxTemp = d3.max(whoData, ((d) => parseFloat(d[4])));
-
-//     ctx.yScale = d3.scaleLinear().domain([0, maxTemp]).range([ctx.h-60, 20]);
-
-
-
-// d3.select("#bkgG").append("g")
-//   .attr("transform", "translate(50,0)")
-//   .call(d3.axisLeft(ctx.yScale).ticks(10))
-//   .selectAll("text")
-//   .style("text-anchor", "end");
-
-//     // y-axis label
-// d3.select("#bkgG")
-//     .append("text")
-//     .attr("y", 0)
-//     .attr("x", 0)
-//     .attr("transform", `rotate(-90) translate(-${500/2},8)`)
-//     .classed("axisLb", true)
-//     .text("Life Expectancy");
-
-
-
-//     gel = d3.select("g#rootG");
-
-//     gel.append("g").attr("id", "raw_d");
-//     gel.append("g").attr("id", "radial");
-//     gel.append("g").attr("id", "primary");
-//     // gel.append("g").attr("id", "imaging");
-//     // gel.append("g").attr("id", "ttv");
-
-//     let raw_d = d3.select("#raw_d");
-//     let radial = d3.select("#radial");
-//     let primary = d3.select("#primary");
-//     // let imaging = d3.select("#imaging");
-//     // let ttv = d3.select("#ttv");
 
     
-//     raw_d.append("text")
-//     .attr("y", 500 - 30)
-//     .attr("x", (500/3)*1)
-//     .classed("axisLb", true);
+    maleFemaleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*1)
+    .classed("axisLb", true)
+    .text("All")
+    .style("text-anchor", "middle");
 
     
-//     radial.append("text")
-//     .attr("y", 500 - 30)
-//     .attr("x", (500/3)*2)
-//     .classed("axisLb", true)
-//     .text("Female")
-//     .style("text-anchor", "middle");
+    femaleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*2)
+    .classed("axisLb", true)
+    .text("Female")
+    .style("text-anchor", "middle");
 
     
-//     primary.append("text")
-//     .attr("y", 500 - 30)
-//     .attr("x", (500/3)*3)
-//     .classed("axisLb", true)
-//     .text("Primary Transit")
-//     .style("text-anchor", "middle");
-
-    
-//     // imaging.append("text")
-//     // .attr("y", ctx.h - 30)
-//     // .attr("x", (ctx.w/6)*4)
-//     // .classed("axisLb", true)
-//     // .text("Imaging")
-//     // .style("text-anchor", "middle");
-
-    
-//     // ttv.append("text")
-//     // .attr("y", ctx.h - 30)
-//     // .attr("x", (ctx.w/6)*5)
-//     // .classed("axisLb", true)
-//     // .text("TTV")
-//     // .style("text-anchor", "middle");
+    maleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*3)
+    .classed("axisLb", true)
+    .text("Male")
+    .style("text-anchor", "middle");
 
 
-//     // let raw_circles = raw_d.selectAll("circle")
-//     // .data(whoData)
-//     // .enter()
-//     // .append("circle");
-//     // raw_circles.attr("cx", function(d){return (ctx.w/2)*1-25 + Math.random()*50;})
-//     // .attr("cy", function(d){return ctx.yScale(d["Life expectancy"]);})
-//     // .attr("r", "2")
+    let maleFemaleData_circles = maleFemaleData.selectAll("circle")
+    .data(whoData)
+    .enter()
+    .append("circle");
+    maleFemaleData_circles.attr("cx", function(d){return (densityPlotData.width/4)*1-25 + Math.random()*50;})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#003f5c");
 
-//     let radial_circles = radial.selectAll("circle")
-//     .data(whoData.filter(function(d){
-//         return (d.Gender == "Male");
-//       }))
-//     .enter()
-//     .append("circle");
-//     radial_circles.attr("cx", function(d){return ((500/3)*2)-25 + (Math.random()*50);})
-//     .attr("cy", function(d){return ctx.yScale(d[4]);})
-//     .attr("r", "2")
-//     .attr("fill", "green");
+    let femaleData_circles = femaleData.selectAll("circle")
+    .data(whoData.filter(function(d){
+        return (d.Gender == "Female");
+      }))
+    .enter()
+    .append("circle");
+    femaleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*2)-25 + (Math.random()*50);})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#ffa0c5");
 
-//     let primary_circles = primary.selectAll("circle")
-//     .data(whoData.filter(function(d){
-//         return (d.Gender == "Female");
-//       }))
-//     .enter()
-//     .append("circle");
-//     primary_circles.attr("cx", function(d){return ((500/3)*3)-25 + (Math.random()*50);})
-//     .attr("cy", function(d){return ctx.yScale(d[4]);})
-//     .attr("r", "2")
-//     .attr("fill", "orange");
-
-
-//     // let imaging_circles = imaging.selectAll("circle")
-//     // .data(planetData.filter(function(d){
-//     //     return (d.detection_type == "Imaging");
-//     //   }))
-//     // .enter()
-//     // .append("circle");
-//     // imaging_circles.attr("cx", function(d){return ((ctx.w/6)*4)-25 + (Math.random()*50);})
-//     // .attr("cy", function(d){return ctx.yScale(d.temp_calculated);})
-//     // .attr("r", "2")
-//     // .attr("fill", "blue");
-
-//     // let ttv_circles = ttv.selectAll("circle")
-//     // .data(planetData.filter(function(d){
-//     //     return (d.detection_type == "TTV");
-//     //   }))
-//     // .enter()
-//     // .append("circle");
-//     // ttv_circles.attr("cx", function(d){return ((ctx.w/6)*5)-25 + (Math.random()*50);})
-//     // .attr("cy", function(d){return ctx.yScale(d.temp_calculated);})
-//     // .attr("r", "2")
-//     // .attr("fill", "red");
+    let maleData_circles = maleData.selectAll("circle")
+    .data(whoData.filter(function(d){
+        return (d.Gender == "Male");
+      }))
+    .enter()
+    .append("circle");
+    maleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*3)-25 + (Math.random()*50);})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#ff6361");
 
 
-//     // Show the main vertical line
+    // Show the main vertical line
 
-//  radial_data = getSummaryStatistics(whoData.filter(function(d){
-//     return (d.Gender == "Male");
-//   }));
-//  radial.append("line")
-//   .attr("x1", (500/3)*2)
-//   .attr("x2", (500/3)*2)
-//   .attr("y1", ctx.yScale(radial_data.min) )
-//   .attr("y2", ctx.yScale(radial_data.max) )
-//   .attr("stroke", "black");
+ femaleData_data = getSummaryStatistics(whoData.filter(function(d){
+    return (d.Gender == "Female");
+  }));
 
-//   // Show the box
+ femaleData.append("line")
+  .attr("x1", (densityPlotData.width/4)*2)
+  .attr("x2", (densityPlotData.width/4)*2)
+  .attr("y1", densityPlotData.yScale(femaleData_data.min) )
+  .attr("y2", densityPlotData.yScale(femaleData_data.max) )
+  .attr("stroke", "black");
 
-// radial.append("rect")
-//   .attr("x", (500/3)*2 - 25)
-//   .attr("y", ctx.yScale(radial_data.q3) )
-//   .attr("height", (ctx.yScale(radial_data.q1)-ctx.yScale(radial_data.q3)) )
-//   .attr("width", 50 )
-//   .attr("stroke", "black")
-//   .style("fill", "transparent");
+  // Show the box
 
-// // show median, min and max horizontal lines
+femaleData.append("rect")
+  .attr("x", (densityPlotData.width/4)*2 - 25)
+  .attr("y", densityPlotData.yScale(femaleData_data.q3) )
+  .attr("height", (densityPlotData.yScale(femaleData_data.q1)-densityPlotData.yScale(femaleData_data.q3)) )
+  .attr("width", 50 )
+  .attr("stroke", "black")
+  .style("fill", "transparent");
 
-// radial.selectAll("toto")
-// .data([radial_data.min, radial_data.median, radial_data.max])
-// .enter()
-// .append("line")
-//   .attr("x1", (500/3)*2-25)
-//   .attr("x2", (500/3)*2+25)
-//   .attr("y1", function(d){ return(ctx.yScale(d))} )
-//   .attr("y2", function(d){ return(ctx.yScale(d))} )
-//   .attr("stroke", "black");
+// show median, min and max horizontal lines
+
+femaleData.selectAll("toto")
+.data([femaleData_data.min, femaleData_data.median, femaleData_data.max])
+.enter()
+.append("line")
+  .attr("x1", (densityPlotData.width/4)*2-25)
+  .attr("x2", (densityPlotData.width/4)*2+25)
+  .attr("y1", function(d){ return(densityPlotData.yScale(d))} )
+  .attr("y2", function(d){ return(densityPlotData.yScale(d))} )
+  .attr("stroke", "black");
 
 
 
-//   primary_data = getSummaryStatistics(whoData.filter(function(d){
-//     return (d[3] == "Female");
-//   }));
-
-//   console.log(primary_data);
-//  primary.append("line")
-//   .attr("x1", (500/3)*3)
-//   .attr("x2", (500/3)*3)
-//   .attr("y1", ctx.yScale(primary_data.min) )
-//   .attr("y2", ctx.yScale(primary_data.max) )
-//   .attr("stroke", "black");
-
-//     // Show the box
-
-// primary.append("rect")
-// .attr("x", (500/3)*3 - 25)
-// .attr("y", ctx.yScale(primary_data.q3) )
-// .attr("height", (ctx.yScale(primary_data.q1)-ctx.yScale(primary_data.q3)) )
-// .attr("width", 50 )
-// .attr("stroke", "black")
-// .style("fill", "transparent");
-
-// // show median, min and max horizontal lines
-
-// primary.selectAll("toto")
-// .data([primary_data.min, primary_data.median, primary_data.max])
-// .enter()
-// .append("line")
-// .attr("x1", (500/3)*3-25)
-// .attr("x2", (500/3)*3+25)
-// .attr("y1", function(d){ return(ctx.yScale(d))} )
-// .attr("y2", function(d){ return(ctx.yScale(d))} )
-// .attr("stroke", "black");
-
-  
-
-// //   imaging_data = getSummaryStatistics(planetData.filter(function(d){
-// //     return (d.detection_type == "Imaging");
-// //   }));
-// //  primary.append("line")
-// //   .attr("x1", (ctx.w/6)*4)
-// //   .attr("x2", (ctx.w/6)*4)
-// //   .attr("y1", ctx.yScale(imaging_data.min) )
-// //   .attr("y2", ctx.yScale(imaging_data.max) )
-// //   .attr("stroke", "black");
+  maleData_data = getSummaryStatistics(whoData.filter(function(d){
+    return (d.Gender == "Male");
+  }));
 
 
-//       // Show the box
+ maleData.append("line")
+  .attr("x1", (densityPlotData.width/4)*3)
+  .attr("x2", (densityPlotData.width/4)*3)
+  .attr("y1", densityPlotData.yScale(maleData_data.min) )
+  .attr("y2", densityPlotData.yScale(maleData_data.max) )
+  .attr("stroke", "black");
 
-// // imaging.append("rect")
-// // .attr("x", (ctx.w/6)*4 - 25)
-// // .attr("y", ctx.yScale(imaging_data.q3) )
-// // .attr("height", (ctx.yScale(imaging_data.q1)-ctx.yScale(imaging_data.q3)) )
-// // .attr("width", 50 )
-// // .attr("stroke", "black")
-// // .style("fill", "transparent");
+    // Show the box
 
-// // show median, min and max horizontal lines
+maleData.append("rect")
+.attr("x", (densityPlotData.width/4)*3 - 25)
+.attr("y", densityPlotData.yScale(maleData_data.q3) )
+.attr("height", (densityPlotData.yScale(maleData_data.q1)-densityPlotData.yScale(maleData_data.q3)) )
+.attr("width", 50 )
+.attr("stroke", "black")
+.style("fill", "transparent");
 
-// // primary.selectAll("toto")
-// // .data([imaging_data.min, imaging_data.median, imaging_data.max])
-// // .enter()
-// // .append("line")
-// // .attr("x1", (500/3)*4-25)
-// // .attr("x2", (500/3)*4+25)
-// // .attr("y1", function(d){ return(ctx.yScale(d))} )
-// // .attr("y2", function(d){ return(ctx.yScale(d))} )
-// // .attr("stroke", "black");
+// show median, min and max horizontal lines
 
-
-// //   ttv_data = getSummaryStatistics(planetData.filter(function(d){
-// //     return (d.detection_type == "TTV");
-// //   }));
-// //  primary.append("line")
-// //   .attr("x1", (ctx.w/6)*5)
-// //   .attr("x2", (ctx.w/6)*5)
-// //   .attr("y1", ctx.yScale(ttv_data.min) )
-// //   .attr("y2", ctx.yScale(ttv_data.max) )
-// //   .attr("stroke", "black");
-
-//         // Show the box
-
-// // ttv.append("rect")
-// // .attr("x", (ctx.w/6)*5 - 25)
-// // .attr("y", ctx.yScale(ttv_data.q3) )
-// // .attr("height", (ctx.yScale(ttv_data.q1)-ctx.yScale(ttv_data.q3)) )
-// // .attr("width", 50 )
-// // .attr("stroke", "black")
-// // .style("fill", "transparent");
-
-// // show median, min and max horizontal lines
-
-// // primary.selectAll("toto")
-// // .data([ttv_data.min, ttv_data.median, ttv_data.max])
-// // .enter()
-// // .append("line")
-// // .attr("x1", (500/3)*5-25)
-// // .attr("x2", (500/3)*5+25)
-// // .attr("y1", function(d){ return(ctx.yScale(d))} )
-// // .attr("y2", function(d){ return(ctx.yScale(d))} )
-// // .attr("stroke", "black");
-//   }
+maleData.selectAll("toto")
+.data([maleData_data.min, maleData_data.median, maleData_data.max])
+.enter()
+.append("line")
+.attr("x1", (densityPlotData.width/4)*3-25)
+.attr("x2", (densityPlotData.width/4)*3+25)
+.attr("y1", function(d){ return(densityPlotData.yScale(d))} )
+.attr("y2", function(d){ return(densityPlotData.yScale(d))} )
+.attr("stroke", "black");
+  }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///Stop Again
+/*Density Chart For Male, Female & All Data Distribution Ends Here*/
 
 
 
@@ -934,21 +738,6 @@ function getGlobalView() {
         .attr("transform", "scale(1,1)");
 };
 
-function createViz() {
-    console.log("Using D3 v" + d3.version);
-    Object.keys(PROJECTIONS).forEach(function (k) {
-        PROJECTIONS[k].rotate([0, 0]).center([0, 0]);
-    });
-    let svgEl = d3.select("#f1").append("svg");
-    svgEl.attr("width", MAP_W);
-    svgEl.attr("height", MAP_H);
-    createNodes();
-    loadContinents();
-    createViz2();
-    createViz3();
-    // createVizf32()
-    loadData(svgEl);
-};
 
 
 function initializeSelectBox() {
@@ -956,6 +745,10 @@ function initializeSelectBox() {
         .on('change', function () {
             fig1Year(this.value);
             if (!ctx.SHOW_FIG3) {
+                document.getElementById("f3").innerHTML = "";
+                createButton()
+                
+                createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
             } else {
@@ -1010,6 +803,9 @@ function initializeSelectBox() {
                 linePlot();
             }
             if (!ctx.SHOW_FIG3) {
+                document.getElementById("f3").innerHTML = "";
+                createButton()
+                createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
             } else {
@@ -2080,3 +1876,40 @@ function animation() {
         ctx.animation_button = true
     }
 }
+
+
+/* Function to dynamically add the animate button on the Figure 3 Scare Plot*/
+
+function createButton(){
+    let btn = document.createElement("button");
+        btn.innerHTML = "Animate";
+        btn.id = "btn";
+        btn.onclick = animation();
+        document.getElementById("f3").appendChild(btn);
+}
+
+
+
+
+/*Visualization Loader Starts Here*/
+
+function createViz() {
+    console.log("Using D3 v" + d3.version);
+    Object.keys(PROJECTIONS).forEach(function (k) {
+        PROJECTIONS[k].rotate([0, 0]).center([0, 0]);
+    });
+    let svgEl = d3.select("#f1").append("svg");
+    svgEl.attr("width", MAP_W);
+    svgEl.attr("height", MAP_H);
+    createNodes();
+    loadContinents();
+    createViz2();
+    if(ctx.SHOW_FIG3){
+        createViz3();
+    }else{
+        createVizf32()
+    }
+    loadData(svgEl);
+};
+
+/*Visualization Loader Ends Here*/
