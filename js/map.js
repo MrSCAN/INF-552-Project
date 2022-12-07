@@ -232,7 +232,7 @@ function BarChartRace(chartId) {
 
     function setTitle(title) {
         d3.select(".chart-title")
-            .attr("x", chartSettings.padding)
+            .attr("x", -chartSettings.padding*2)
             .attr("y", -chartSettings.padding / 2)
             .text(title);
 
@@ -449,7 +449,7 @@ function initSVGcanvas(whoData) {
         .append("circle");
     maleFemaleData_circles.attr("cx", function (d) { return (densityPlotData.width / 4) * 1 - 25 + Math.random() * 50; })
         .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
-        .attr("r", "2")
+        .attr("r", "0.5")
         .attr("fill", "#003f5c");
 
     let femaleData_circles = femaleData.selectAll("circle")
@@ -460,7 +460,7 @@ function initSVGcanvas(whoData) {
         .append("circle");
     femaleData_circles.attr("cx", function (d) { return ((densityPlotData.width / 4) * 2) - 25 + (Math.random() * 50); })
         .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
-        .attr("r", "2")
+        .attr("r", "0.5")
         .attr("fill", "#ffa0c5");
 
     let maleData_circles = maleData.selectAll("circle")
@@ -471,7 +471,7 @@ function initSVGcanvas(whoData) {
         .append("circle");
     maleData_circles.attr("cx", function (d) { return ((densityPlotData.width / 4) * 3) - 25 + (Math.random() * 50); })
         .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
-        .attr("r", "2")
+        .attr("r", "0.5")
         .attr("fill", "#ff6361");
 
 
