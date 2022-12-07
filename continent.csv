@@ -1,5 +1,4 @@
-Africa,,1770,26.4
-Africa,,1925,26.4
+continent,code,year,le
 Africa,,1950,36.45
 Africa,,1951,36.712
 Africa,,1952,37.234
@@ -63,7 +62,6 @@ Africa,,2009,57.858
 Africa,,2010,58.576
 Africa,,2011,59.263
 Africa,,2012,59.914
-Entity,Code,Year,Life expectancy
 Africa,,2013,60.527
 Africa,,2014,61.093
 Africa,,2015,61.607
@@ -71,12 +69,6 @@ Africa,,2016,62.064
 Africa,,2017,62.472
 Africa,,2018,62.839
 Africa,,2019,63.17
-Americas,,1770,34.8
-Americas,,1830,34.8
-Americas,,1850,35.1
-Americas,,1870,35.1
-Americas,,1900,41
-Americas,,1913,45.1
 Americas,,1950,59.30469677
 Americas,,1951,59.46994456
 Americas,,1952,59.85612063
@@ -147,10 +139,6 @@ Americas,,2016,76.53703933
 Americas,,2017,76.62993096
 Americas,,2018,76.72842701
 Americas,,2019,76.83538896
-Asia,,1770,27.5
-Asia,,1880,27.5
-Asia,,1900,28
-Asia,,1913,28.1
 Asia,,1950,41.115
 Asia,,1951,41.447
 Asia,,1952,42.076
@@ -221,13 +209,6 @@ Asia,,2016,72.897
 Asia,,2017,73.15
 Asia,,2018,73.381
 Asia,,2019,73.593
-Europe,,1770,34.3
-Europe,,1800,33.3
-Europe,,1820,35.6
-Europe,,1850,36.3
-Europe,,1870,36.2
-Europe,,1900,42.7
-Europe,,1913,46.8
 Europe,,1950,61.989
 Europe,,1951,62.441
 Europe,,1952,63.317
@@ -438,10 +419,6 @@ Northern America,,2016,79.21
 Northern America,,2017,79.198
 Northern America,,2018,79.199
 Northern America,,2019,79.221
-Oceania,,1770,34.7
-Oceania,,1870,34.7
-Oceania,,1900,47.6
-Oceania,,1913,51
 Oceania,,1950,57.729
 Oceania,,1951,58.094
 Oceania,,1952,58.801
