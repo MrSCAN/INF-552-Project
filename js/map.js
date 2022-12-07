@@ -1,3 +1,5 @@
+/*Animated Continent Chart Starts Here*/
+
 const continents = [
     "Africa",
     "Americas",
@@ -15,10 +17,11 @@ const chartSettings = {
     titlePadding: 5,
     columnPadding: 0.4,
     ticksInXAxis: 5,
-    duration: 3500,
+    duration: 500,
     color: [],
+    dataSets:[],
 };
-chartSettings.color =["green","red","yellow", "grey", "blue", "pink", "orange"];
+chartSettings.color = ["#00202e",  "#003f5c",  "#2c4875",  "#8a508f",  "#bc5090",  "#ff6361",  "#ff8531"];
 
 function createNodes() {
     let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
@@ -30,50 +33,28 @@ function createNodes() {
     container.append("g").attr("class", "y-axis");
     container.append("g").attr("class", "columns");
     container.append("text").attr("class", "current-date");
-
-    runBarChart();
 }
 
+function loadContinents(){
+    d3.csv("continent.csv").then(function (data) {
+        generateDataSets(data);
+        runBarChart();
+    }).catch(function(error){console.log(error)});
+};
 
-function generateDataSets() {
-    const dataSets = [];
-    const currentYear = 2019;
-    const maxLimitForValue = 79.224;
-    const minLimitForValue = 26.4;
-    for (let i = 0; i < 70; i++) {
-        dataSets.push({
-            date: currentYear - (70 - (i + 1)),
-            dataSet: continents.map((continent) => ({
-                name: continent,
-                value:
-                    Math.random() * (maxLimitForValue - minLimitForValue) +
-                    minLimitForValue
-            }))
-        });
-    }
-    return dataSets;
+
+
+function generateDataSets(data) {
+        for (let j = 0; j < 70; j++) {
+            chartSettings.dataSets.push({
+                date: data[j].year,
+                dataSet: continents.map((continent, index) => ({
+                    name: continent, 
+                    value: data[index * 70 + j].le
+                }))
+            });
+        }
 }
-
-// function generateDataSets() {
-
-//     const dataSets = [];
-//     const currentYear = 2019;
-//     const maxLimitForValue = 79.224;
-//     const minLimitForValue = 26.4;
-//     for (let i = 0; i < 100; i++) {
-//         dataSets.push({
-//             date: currentYear - (100 - (i + 1)),
-//             dataSet: continents.map((continent) => ({
-//                 name: continent,
-//                 value:
-//                     Math.random() * (maxLimitForValue - minLimitForValue) +
-//                     minLimitForValue
-//             }))
-//         });
-//     }
-//     // console.log(dataSets)
-//     return dataSets;
-// }
 
 
 function BarChartRace(chartId) {
@@ -313,7 +294,7 @@ function runBarChart(){
     const f4 = new BarChartRace("bar-chart-race");
 
     f4.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
-        .addDatasets(generateDataSets())
+        .addDatasets(chartSettings.dataSets)
         .render();
 
     d3.select("#btn2").on("click", function () {
@@ -329,6 +310,7 @@ function runBarChart(){
         }
     });
 }
+/*Animated Continent Chart Ends Here*/
 
 
 
@@ -339,11 +321,228 @@ function runBarChart(){
 
 
 
+/*Density Chart For Male, Female & All Data Distribution Starts Here*/
+const densityPlotData = {
+    width: 0.5 * window.innerWidth - 20,
+    height: 0.5 * window.innerHeight - 20,
+}
+function loadAllData(){
+    d3.csv("who_life_expectancy_all.csv").then(function(data){
+        initSVGcanvas(data);
+    }).catch(function(error){console.log(error)});
+};
+
+function createVizf32(){
+    var svgEl = d3.select("#f3").append("svg");
+    svgEl.attr("width", densityPlotData.width);
+    svgEl.attr("height", densityPlotData.height);
+    var rootG = svgEl.append("g").attr("id", "rootG");
+    // group for background elements (axes, labels)
+    rootG.append("g").attr("id", "bkgG");
+    loadAllData(svgEl);
+};
+
+/*-------------- Summary stats for box plot ------------------------*/
+/*-------------- see Instructions/Section 3 ----------------------*/
+
+function getSummaryStatistics(data){
+    return d3.rollup(data, function(d){
+        
+        let q1 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .25);
+        let median = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .5);
+        let q3 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .75);
+        let iqr = q3 - q1;
+        let min = d3.min(data, (d) => (d["Life expectancy"]));
+        let max = d3.max(data, (d) => (d["Life expectancy"]));
+        return({q1: q1, median: median, q3:q3, iqr: iqr, min: min, max: max})
+    });
+};
+
+/*-------------- kernel density estimator ------------------------*/
+/*-------------- see Instructions/Section 4 ----------------------*/
+
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(function(x) {
+      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+    });
+  };
+}
+
+function kernelEpanechnikov(k) {
+  return function(v) {
+    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+  };
+}
+
+
+function initSVGcanvas(whoData){  
+    let maxLe = d3.max(whoData, ((d) => parseFloat(d["Life expectancy"])));
+
+    densityPlotData.yScale = d3.scaleLinear().domain([0, maxLe]).range([densityPlotData.height-60, 20]);
 
 
 
+d3.select("#bkgG").append("g")
+  .attr("transform", "translate(50,0)")
+  .call(d3.axisLeft(densityPlotData.yScale).ticks(10))
+  .selectAll("text")
+  .style("text-anchor", "end");
 
-/////stop stop
+    // y-axis label
+d3.select("#bkgG")
+    .append("text")
+    .attr("y", 0)
+    .attr("x", 0)
+    .attr("transform", `rotate(-90) translate(-${densityPlotData.width/4},15)`)
+    .classed("axisLb", true)
+    .text("Life Expectancy");
+
+
+
+    gel = d3.select("g#rootG");
+
+    gel.append("g").attr("id", "maleFemaleData");
+    gel.append("g").attr("id", "femaleData");
+    gel.append("g").attr("id", "maleData");
+
+
+    let maleFemaleData = d3.select("#maleFemaleData");
+    let femaleData = d3.select("#femaleData");
+    let maleData = d3.select("#maleData");
+
+
+    
+    maleFemaleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*1)
+    .classed("axisLb", true)
+    .text("All")
+    .style("text-anchor", "middle");
+
+    
+    femaleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*2)
+    .classed("axisLb", true)
+    .text("Female")
+    .style("text-anchor", "middle");
+
+    
+    maleData.append("text")
+    .attr("y", densityPlotData.height - densityPlotData.height/8)
+    .attr("x", (densityPlotData.width/4)*3)
+    .classed("axisLb", true)
+    .text("Male")
+    .style("text-anchor", "middle");
+
+
+    let maleFemaleData_circles = maleFemaleData.selectAll("circle")
+    .data(whoData)
+    .enter()
+    .append("circle");
+    maleFemaleData_circles.attr("cx", function(d){return (densityPlotData.width/4)*1-25 + Math.random()*50;})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#003f5c");
+
+    let femaleData_circles = femaleData.selectAll("circle")
+    .data(whoData.filter(function(d){
+        return (d.Gender == "Female");
+      }))
+    .enter()
+    .append("circle");
+    femaleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*2)-25 + (Math.random()*50);})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#ffa0c5");
+
+    let maleData_circles = maleData.selectAll("circle")
+    .data(whoData.filter(function(d){
+        return (d.Gender == "Male");
+      }))
+    .enter()
+    .append("circle");
+    maleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*3)-25 + (Math.random()*50);})
+    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
+    .attr("r", "2")
+    .attr("fill", "#ff6361");
+
+
+    // Show the main vertical line
+
+ femaleData_data = getSummaryStatistics(whoData.filter(function(d){
+    return (d.Gender == "Female");
+  }));
+
+ femaleData.append("line")
+  .attr("x1", (densityPlotData.width/4)*2)
+  .attr("x2", (densityPlotData.width/4)*2)
+  .attr("y1", densityPlotData.yScale(femaleData_data.min) )
+  .attr("y2", densityPlotData.yScale(femaleData_data.max) )
+  .attr("stroke", "black");
+
+  // Show the box
+
+femaleData.append("rect")
+  .attr("x", (densityPlotData.width/4)*2 - 25)
+  .attr("y", densityPlotData.yScale(femaleData_data.q3) )
+  .attr("height", (densityPlotData.yScale(femaleData_data.q1)-densityPlotData.yScale(femaleData_data.q3)) )
+  .attr("width", 50 )
+  .attr("stroke", "black")
+  .style("fill", "transparent");
+
+// show median, min and max horizontal lines
+
+femaleData.selectAll("toto")
+.data([femaleData_data.min, femaleData_data.median, femaleData_data.max])
+.enter()
+.append("line")
+  .attr("x1", (densityPlotData.width/4)*2-25)
+  .attr("x2", (densityPlotData.width/4)*2+25)
+  .attr("y1", function(d){ return(densityPlotData.yScale(d))} )
+  .attr("y2", function(d){ return(densityPlotData.yScale(d))} )
+  .attr("stroke", "black");
+
+
+
+  maleData_data = getSummaryStatistics(whoData.filter(function(d){
+    return (d.Gender == "Male");
+  }));
+
+
+ maleData.append("line")
+  .attr("x1", (densityPlotData.width/4)*3)
+  .attr("x2", (densityPlotData.width/4)*3)
+  .attr("y1", densityPlotData.yScale(maleData_data.min) )
+  .attr("y2", densityPlotData.yScale(maleData_data.max) )
+  .attr("stroke", "black");
+
+    // Show the box
+
+maleData.append("rect")
+.attr("x", (densityPlotData.width/4)*3 - 25)
+.attr("y", densityPlotData.yScale(maleData_data.q3) )
+.attr("height", (densityPlotData.yScale(maleData_data.q1)-densityPlotData.yScale(maleData_data.q3)) )
+.attr("width", 50 )
+.attr("stroke", "black")
+.style("fill", "transparent");
+
+// show median, min and max horizontal lines
+
+maleData.selectAll("toto")
+.data([maleData_data.min, maleData_data.median, maleData_data.max])
+.enter()
+.append("line")
+.attr("x1", (densityPlotData.width/4)*3-25)
+.attr("x2", (densityPlotData.width/4)*3+25)
+.attr("y1", function(d){ return(densityPlotData.yScale(d))} )
+.attr("y2", function(d){ return(densityPlotData.yScale(d))} )
+.attr("stroke", "black");
+  }
+
+
+/*Density Chart For Male, Female & All Data Distribution Ends Here*/
 
 
 
@@ -539,19 +738,6 @@ function getGlobalView() {
         .attr("transform", "scale(1,1)");
 };
 
-function createViz() {
-    console.log("Using D3 v" + d3.version);
-    Object.keys(PROJECTIONS).forEach(function (k) {
-        PROJECTIONS[k].rotate([0, 0]).center([0, 0]);
-    });
-    let svgEl = d3.select("#f1").append("svg");
-    svgEl.attr("width", MAP_W);
-    svgEl.attr("height", MAP_H);
-    createViz2();
-    createViz3();
-    createNodes();
-    loadData(svgEl);
-};
 
 
 function initializeSelectBox() {
@@ -559,6 +745,10 @@ function initializeSelectBox() {
         .on('change', function () {
             fig1Year(this.value);
             if (!ctx.SHOW_FIG3) {
+                document.getElementById("f3").innerHTML = "";
+                createButton()
+                
+                createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
             } else {
@@ -615,6 +805,9 @@ function initializeSelectBox() {
                 linePlot();
             }
             if (!ctx.SHOW_FIG3) {
+                document.getElementById("f3").innerHTML = "";
+                createButton()
+                createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
             } else {
@@ -1685,3 +1878,40 @@ function animation() {
         ctx.animation_button = true
     }
 }
+
+
+/* Function to dynamically add the animate button on the Figure 3 Scare Plot*/
+
+function createButton(){
+    let btn = document.createElement("button");
+        btn.innerHTML = "Animate";
+        btn.id = "btn";
+        btn.onclick = animation();
+        document.getElementById("f3").appendChild(btn);
+}
+
+
+
+
+/*Visualization Loader Starts Here*/
+
+function createViz() {
+    console.log("Using D3 v" + d3.version);
+    Object.keys(PROJECTIONS).forEach(function (k) {
+        PROJECTIONS[k].rotate([0, 0]).center([0, 0]);
+    });
+    let svgEl = d3.select("#f1").append("svg");
+    svgEl.attr("width", MAP_W);
+    svgEl.attr("height", MAP_H);
+    createNodes();
+    loadContinents();
+    createViz2();
+    if(ctx.SHOW_FIG3){
+        createViz3();
+    }else{
+        createVizf32()
+    }
+    loadData(svgEl);
+};
+
+/*Visualization Loader Ends Here*/
