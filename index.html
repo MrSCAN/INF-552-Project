@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/f4.css">
-    <script type="text/javascript" src="js/d3-geo-projection.v4.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/f4.css" />
+    <script
+      type="text/javascript"
+      src="js/d3-geo-projection.v4.min.js"
+    ></script>
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.5.0"></script>
@@ -13,21 +16,12 @@
     <script type="text/javascript" src="js/d3.v7.min.js"></script>
     <script type="text/javascript" src="js/echarts.js"></script>
     <script type="text/javascript" src="js/map.js"></script>
-    <style>
-        html, body { width: 100%; height: 100%; padding: 0; margin: 0 }
-        div { position: absolute; padding: 1em; border: 0px solid #555 }
-        #f1 { background: rgb(255, 255, 255); top: 3%;   left: 0;   right: 50%; bottom: 40% }
-        #fig2_title { background: rgb(255, 255, 255); top: 4%;   left: 50%;   right: 0; bottom: 10% }
-        #f2 { background: rgb(255, 255, 255); top: 10%;   left: 50%; right: 0;   bottom: 50% }
-        #f3 { background: rgb(255, 255, 255); top: 50%; left: 0;   right: 50%; bottom: 0}
-        #f4 { background: rgb(254, 254, 254); top: 50%; left: 50%; right: 0;   bottom: 0}
-    </style>
     <title>Document</title>
-</head>
-<body onload="createViz(); ">
-    <body>
-    Year:
-    <select id="year">
+  </head>
+  <body onload="createViz(); ">
+    <div id="topBar">
+      Year:
+      <select id="year">
         <option value="2000">2000</option>
         <option value="2001">2001</option>
         <option value="2002">2002</option>
@@ -49,41 +43,52 @@
         <option value="2018">2018</option>
         <option value="2019">2019</option>
         <option value="2020">2020</option>
-    </select>   
-    Gender:
-    <select id="gender">
+      </select>
+      Gender:
+      <select id="gender">
         <option value="all">all</option>
         <option value="male">male</option>
         <option value="female">female</option>
-    </select>
-    Factor:
-    <select id="factor">
+      </select>
+      Factor:
+      <select id="factor">
         <option value="Life expectancy">Life expectancy</option>
         <option value="Unemployment">Unemployment</option>
         <option value="Infant Mortality">Infant Mortality</option>
         <option value="GDP">GDP</option>
         <option value="GNI">GNI</option>
-        <option value="Clean fuels and cooking technologies">Clean fuels and cooking technologies</option>
+        <option value="Clean fuels and cooking technologies">
+          Clean fuels and cooking technologies
+        </option>
         <option value="Per Capita">Per Capita</option>
-        <option value="Mortality caused by road traffic injury">Mortality caused by road traffic injury</option>
+        <option value="Mortality caused by road traffic injury">
+          Mortality caused by road traffic injury
+        </option>
         <option value="Tuberculosis Incidence">Tuberculosis Incidence</option>
         <option value="DPT Immunization">DPT Immunization</option>
         <option value="HepB3 Immunization">HepB3 Immunization</option>
         <option value="Measles Immunization">Measles Immunization</option>
         <option value="Hospital beds">Hospital beds</option>
-        <option value="Basic sanitation services">Basic sanitation services</option>
+        <option value="Basic sanitation services">
+          Basic sanitation services
+        </option>
         <option value="Tuberculosis treatment">Tuberculosis treatment</option>
         <option value="Urban population">Urban population</option>
         <option value="Rural population">Rural population</option>
-        <option value="Non-communicable Mortality">Non-communicable Mortality</option>
+        <option value="Non-communicable Mortality">
+          Non-communicable Mortality
+        </option>
         <option value="Sucide Rate">Sucide Rate</option>
-    </select>
+      </select>
+    </div>
     <div id="f1">World map showing the heatmap of Life Expectancy</div>
-    <div id="fig2_title" style="Margin-top: 0">A line chart showing the trend of Life Expectancy</div>
+    <div id="fig2_title" style="margin-top: 0">
+      A line chart showing the trend of Life Expectancy
+    </div>
     <div id="f2"></div>
     <div id="f3">Distribution of Life expectancy, broken down by gender</div>
     <div id="f4">
-        <button id="btn2">Stop</button>
+      <button id="btn2">Stop</button>
     </div>
-</body>
+  </body>
 </html>

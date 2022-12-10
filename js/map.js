@@ -739,12 +739,11 @@ function initializeSelectBox() {
         .on('change', function () {
             fig1Year(this.value);
             if (!ctx.SHOW_FIG3) {
-                document.getElementById("f3").innerHTML = "111";
-                createButton()
-
-                createViz3();
-                ScattorPlot();
-                ctx.SHOW_FIG3 = true;
+                // document.getElementById("f3").innerHTML = "";
+                // createButton();
+                // createViz3();
+                // ScattorPlot();
+                // ctx.SHOW_FIG3 = true;
             } else {
                 ScatterChange();
             }
@@ -801,7 +800,7 @@ function initializeSelectBox() {
             if (!ctx.SHOW_FIG3) {
                 document.getElementById("f3").innerHTML = "";
                 createButton()
-                d3.select("#f3").append("div").attr("id", "fig3_title").text("A scatter plot of Life Expectanct versus " + ctx.FACTOR);
+                d3.select("#f3").append("div").attr("id", "fig3_title").text("A scatter plot of Life Expectancy versus " + ctx.FACTOR);
                 createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
@@ -1097,7 +1096,7 @@ function createViz2() {
 
 function linePlot() {
     d = ctx.COUNTRY
-    d3.select("#fig2_title")["_groups"][0][0].childNodes[0].data = "A line chart showing the trend of Life Expectancy and " + ctx.FACTOR;
+    d3.select("#fig2_title")["_groups"][0][0].childNodes[0].data = "A line chart showing the trend of " + ctx.FACTOR+" and Year (2000 - 2019)";
     d3.csv("who_life_expectancy_all.csv").then(function (da) {
         if (ctx.FACTOR == "Life expectancy") {
             data = da;
