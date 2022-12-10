@@ -19,9 +19,9 @@ const chartSettings = {
     ticksInXAxis: 5,
     duration: 500,
     color: [],
-    dataSets:[],
+    dataSets: [],
 };
-chartSettings.color = ["#00202e",  "#003f5c",  "#2c4875",  "#8a508f",  "#bc5090",  "#ff6361",  "#ff8531"];
+chartSettings.color = ["#00202e", "#003f5c", "#2c4875", "#8a508f", "#bc5090", "#ff6361", "#ff8531"];
 
 function createNodes() {
     let svgE2 = d3.select("#f4").append("svg").attr("id", "bar-chart-race");
@@ -35,25 +35,25 @@ function createNodes() {
     container.append("text").attr("class", "current-date");
 }
 
-function loadContinents(){
+function loadContinents() {
     d3.csv("continent.csv").then(function (data) {
         generateDataSets(data);
         runBarChart();
-    }).catch(function(error){console.log(error)});
+    }).catch(function (error) { console.log(error) });
 };
 
 
 
 function generateDataSets(data) {
-        for (let j = 0; j < 70; j++) {
-            chartSettings.dataSets.push({
-                date: data[j].year,
-                dataSet: continents.map((continent, index) => ({
-                    name: continent, 
-                    value: data[index * 70 + j].le
-                }))
-            });
-        }
+    for (let j = 0; j < 70; j++) {
+        chartSettings.dataSets.push({
+            date: data[j].year,
+            dataSet: continents.map((continent, index) => ({
+                name: continent,
+                value: data[index * 70 + j].le
+            }))
+        });
+    }
 }
 
 
@@ -72,27 +72,27 @@ function BarChartRace(chartId) {
     const xAxisContainer = d3.select(`#${chartId} .x-axis`);
     const yAxisContainer = d3.select(`#${chartId} .y-axis`);
 
-    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth - chartSettings.padding*4]);
+    const xAxisScale = d3.scaleLinear().range([0, chartSettings.innerWidth - chartSettings.padding * 4]);
 
     const yAxisScale = d3
         .scaleBand()
-        .range([0, chartSettings.innerHeight-chartSettings.columnPadding])
+        .range([0, chartSettings.innerHeight - chartSettings.columnPadding])
         .padding(chartSettings.columnPadding);
 
     d3.select(`#${chartId}`)
-        .attr("width", chartSettings.width- chartSettings.padding)
+        .attr("width", chartSettings.width - chartSettings.padding)
         .attr("height", chartSettings.height);
 
     chartContainer.attr(
         "transform",
-        `translate(${chartSettings.padding*2} ${chartSettings.padding})`
+        `translate(${chartSettings.padding * 2} ${chartSettings.padding})`
     );
 
     chartContainer
         .select(".current-date")
         .attr(
             "transform",
-            `translate(${chartSettings.innerWidth - chartSettings.padding*1.5} ${chartSettings.innerHeight/2})`
+            `translate(${chartSettings.innerWidth - chartSettings.padding - 580}, -20)`
         );
 
     function draw({ dataSet, date: currentDate }, transition) {
@@ -103,6 +103,7 @@ function BarChartRace(chartId) {
         );
 
         chartContainer.select(".current-date").text(currentDate);
+        // ctx.f4.setTitle("A Chart Showing Life Expectancy of Different Continents for "+currentDate);
 
         xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
         yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
@@ -134,7 +135,7 @@ function BarChartRace(chartId) {
             .append("rect")
             .attr("class", "column-rect")
             .attr("width", 0)
-            .style("fill", (d)=>chartSettings.color[continents.indexOf(d.name)])
+            .style("fill", (d) => chartSettings.color[continents.indexOf(d.name)])
             .attr("height", yAxisScale.step() * (1 - chartSettings.columnPadding));
 
         // barGroupsEnter
@@ -232,7 +233,7 @@ function BarChartRace(chartId) {
 
     function setTitle(title) {
         d3.select(".chart-title")
-            .attr("x", chartSettings.padding)
+            .attr("x", -chartSettings.padding*2)
             .attr("y", -chartSettings.padding / 2)
             .text(title);
 
@@ -290,10 +291,10 @@ function BarChartRace(chartId) {
     };
 }
 
-function runBarChart(){
+function runBarChart() {
     const f4 = new BarChartRace("bar-chart-race");
-
-    f4.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
+    ctx.f4 = f4;
+    f4.setTitle("A Chart Showing Life Expectancy of Different Continents for")
         .addDatasets(chartSettings.dataSets)
         .render();
 
@@ -326,13 +327,19 @@ const densityPlotData = {
     width: 0.5 * window.innerWidth - 20,
     height: 0.5 * window.innerHeight - 20,
 }
-function loadAllData(){
-    d3.csv("who_life_expectancy_all.csv").then(function(data){
+function loadAllData() {
+    d3.csv("who_life_expectancy_all.csv").then(function (data) {
         initSVGcanvas(data);
-    }).catch(function(error){console.log(error)});
+    }).catch(function (error) { console.log(error) });
 };
 
-function createVizf32(){
+function createVizf32() {
+    const f3 = new BarChartRace("bar-chart-race");
+
+    f3.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
+        .addDatasets(chartSettings.dataSets)
+        .render();
+
     var svgEl = d3.select("#f3").append("svg");
     svgEl.attr("width", densityPlotData.width);
     svgEl.attr("height", densityPlotData.height);
@@ -345,16 +352,16 @@ function createVizf32(){
 /*-------------- Summary stats for box plot ------------------------*/
 /*-------------- see Instructions/Section 3 ----------------------*/
 
-function getSummaryStatistics(data){
-    return d3.rollup(data, function(d){
-        
-        let q1 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .25);
-        let median = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .5);
-        let q3 = d3.quantile(d.map(function(p){return p["Life expectancy"];}).sort(d3.ascending), .75);
+function getSummaryStatistics(data) {
+    return d3.rollup(data, function (d) {
+
+        let q1 = d3.quantile(d.map(function (p) { return p["Life expectancy"]; }).sort(d3.ascending), .25);
+        let median = d3.quantile(d.map(function (p) { return p["Life expectancy"]; }).sort(d3.ascending), .5);
+        let q3 = d3.quantile(d.map(function (p) { return p["Life expectancy"]; }).sort(d3.ascending), .75);
         let iqr = q3 - q1;
         let min = d3.min(data, (d) => (d["Life expectancy"]));
         let max = d3.max(data, (d) => (d["Life expectancy"]));
-        return({q1: q1, median: median, q3:q3, iqr: iqr, min: min, max: max})
+        return ({ q1: q1, median: median, q3: q3, iqr: iqr, min: min, max: max })
     });
 };
 
@@ -362,41 +369,41 @@ function getSummaryStatistics(data){
 /*-------------- see Instructions/Section 4 ----------------------*/
 
 function kernelDensityEstimator(kernel, X) {
-  return function(V) {
-    return X.map(function(x) {
-      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-    });
-  };
+    return function (V) {
+        return X.map(function (x) {
+            return [x, d3.mean(V, function (v) { return kernel(x - v); })];
+        });
+    };
 }
 
 function kernelEpanechnikov(k) {
-  return function(v) {
-    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-  };
+    return function (v) {
+        return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    };
 }
 
 
-function initSVGcanvas(whoData){  
+function initSVGcanvas(whoData) {
     let maxLe = d3.max(whoData, ((d) => parseFloat(d["Life expectancy"])));
 
-    densityPlotData.yScale = d3.scaleLinear().domain([0, maxLe]).range([densityPlotData.height-60, 20]);
+    densityPlotData.yScale = d3.scaleLinear().domain([0, maxLe]).range([densityPlotData.height - 60, 20]);
 
 
 
-d3.select("#bkgG").append("g")
-  .attr("transform", "translate(50,0)")
-  .call(d3.axisLeft(densityPlotData.yScale).ticks(10))
-  .selectAll("text")
-  .style("text-anchor", "end");
+    d3.select("#bkgG").append("g")
+        .attr("transform", "translate(50,0)")
+        .call(d3.axisLeft(densityPlotData.yScale).ticks(10))
+        .selectAll("text")
+        .style("text-anchor", "end");
 
     // y-axis label
-d3.select("#bkgG")
-    .append("text")
-    .attr("y", 0)
-    .attr("x", 0)
-    .attr("transform", `rotate(-90) translate(-${densityPlotData.width/4},15)`)
-    .classed("axisLb", true)
-    .text("Life Expectancy");
+    d3.select("#bkgG")
+        .append("text")
+        .attr("y", 0)
+        .attr("x", 0)
+        .attr("transform", `rotate(-90) translate(-${densityPlotData.width / 4},15)`)
+        .classed("axisLb", true)
+        .text("Life Expectancy");
 
 
 
@@ -412,149 +419,137 @@ d3.select("#bkgG")
     let maleData = d3.select("#maleData");
 
 
-    
+
     maleFemaleData.append("text")
-    .attr("y", densityPlotData.height - densityPlotData.height/8)
-    .attr("x", (densityPlotData.width/4)*1)
-    .classed("axisLb", true)
-    .text("All")
-    .style("text-anchor", "middle");
+        .attr("y", densityPlotData.height - densityPlotData.height / 8)
+        .attr("x", (densityPlotData.width / 4) * 1)
+        .classed("axisLb", true)
+        .text("All")
+        .style("text-anchor", "middle");
 
-    
+
     femaleData.append("text")
-    .attr("y", densityPlotData.height - densityPlotData.height/8)
-    .attr("x", (densityPlotData.width/4)*2)
-    .classed("axisLb", true)
-    .text("Female")
-    .style("text-anchor", "middle");
+        .attr("y", densityPlotData.height - densityPlotData.height / 8)
+        .attr("x", (densityPlotData.width / 4) * 2)
+        .classed("axisLb", true)
+        .text("Female")
+        .style("text-anchor", "middle");
 
-    
+
     maleData.append("text")
-    .attr("y", densityPlotData.height - densityPlotData.height/8)
-    .attr("x", (densityPlotData.width/4)*3)
-    .classed("axisLb", true)
-    .text("Male")
-    .style("text-anchor", "middle");
+        .attr("y", densityPlotData.height - densityPlotData.height / 8)
+        .attr("x", (densityPlotData.width / 4) * 3)
+        .classed("axisLb", true)
+        .text("Male")
+        .style("text-anchor", "middle");
 
 
     let maleFemaleData_circles = maleFemaleData.selectAll("circle")
-    .data(whoData)
-    .enter()
-    .append("circle");
-    maleFemaleData_circles.attr("cx", function(d){return (densityPlotData.width/4)*1-25 + Math.random()*50;})
-    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
-    .attr("r", "2")
-    .attr("fill", "#003f5c");
+        .data(whoData)
+        .enter()
+        .append("circle");
+    maleFemaleData_circles.attr("cx", function (d) { return (densityPlotData.width / 4) * 1 - 25 + Math.random() * 50; })
+        .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
+        .attr("r", "0.5")
+        .attr("fill", "#003f5c");
 
     let femaleData_circles = femaleData.selectAll("circle")
-    .data(whoData.filter(function(d){
-        return (d.Gender == "Female");
-      }))
-    .enter()
-    .append("circle");
-    femaleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*2)-25 + (Math.random()*50);})
-    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
-    .attr("r", "2")
-    .attr("fill", "#ffa0c5");
+        .data(whoData.filter(function (d) {
+            return (d.Gender == "Female");
+        }))
+        .enter()
+        .append("circle");
+    femaleData_circles.attr("cx", function (d) { return ((densityPlotData.width / 4) * 2) - 25 + (Math.random() * 50); })
+        .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
+        .attr("r", "0.5")
+        .attr("fill", "#ffa0c5");
 
     let maleData_circles = maleData.selectAll("circle")
-    .data(whoData.filter(function(d){
-        return (d.Gender == "Male");
-      }))
-    .enter()
-    .append("circle");
-    maleData_circles.attr("cx", function(d){return ((densityPlotData.width/4)*3)-25 + (Math.random()*50);})
-    .attr("cy", function(d){return densityPlotData.yScale(d["Life expectancy"]);})
-    .attr("r", "2")
-    .attr("fill", "#ff6361");
+        .data(whoData.filter(function (d) {
+            return (d.Gender == "Male");
+        }))
+        .enter()
+        .append("circle");
+    maleData_circles.attr("cx", function (d) { return ((densityPlotData.width / 4) * 3) - 25 + (Math.random() * 50); })
+        .attr("cy", function (d) { return densityPlotData.yScale(d["Life expectancy"]); })
+        .attr("r", "0.5")
+        .attr("fill", "#ff6361");
 
 
     // Show the main vertical line
 
- femaleData_data = getSummaryStatistics(whoData.filter(function(d){
-    return (d.Gender == "Female");
-  }));
+    femaleData_data = getSummaryStatistics(whoData.filter(function (d) {
+        return (d.Gender == "Female");
+    }));
 
- femaleData.append("line")
-  .attr("x1", (densityPlotData.width/4)*2)
-  .attr("x2", (densityPlotData.width/4)*2)
-  .attr("y1", densityPlotData.yScale(femaleData_data.min) )
-  .attr("y2", densityPlotData.yScale(femaleData_data.max) )
-  .attr("stroke", "black");
-
-  // Show the box
-
-femaleData.append("rect")
-  .attr("x", (densityPlotData.width/4)*2 - 25)
-  .attr("y", densityPlotData.yScale(femaleData_data.q3) )
-  .attr("height", (densityPlotData.yScale(femaleData_data.q1)-densityPlotData.yScale(femaleData_data.q3)) )
-  .attr("width", 50 )
-  .attr("stroke", "black")
-  .style("fill", "transparent");
-
-// show median, min and max horizontal lines
-
-femaleData.selectAll("toto")
-.data([femaleData_data.min, femaleData_data.median, femaleData_data.max])
-.enter()
-.append("line")
-  .attr("x1", (densityPlotData.width/4)*2-25)
-  .attr("x2", (densityPlotData.width/4)*2+25)
-  .attr("y1", function(d){ return(densityPlotData.yScale(d))} )
-  .attr("y2", function(d){ return(densityPlotData.yScale(d))} )
-  .attr("stroke", "black");
-
-
-
-  maleData_data = getSummaryStatistics(whoData.filter(function(d){
-    return (d.Gender == "Male");
-  }));
-
-
- maleData.append("line")
-  .attr("x1", (densityPlotData.width/4)*3)
-  .attr("x2", (densityPlotData.width/4)*3)
-  .attr("y1", densityPlotData.yScale(maleData_data.min) )
-  .attr("y2", densityPlotData.yScale(maleData_data.max) )
-  .attr("stroke", "black");
+    femaleData.append("line")
+        .attr("x1", (densityPlotData.width / 4) * 2)
+        .attr("x2", (densityPlotData.width / 4) * 2)
+        .attr("y1", densityPlotData.yScale(femaleData_data.min))
+        .attr("y2", densityPlotData.yScale(femaleData_data.max))
+        .attr("stroke", "black");
 
     // Show the box
 
-maleData.append("rect")
-.attr("x", (densityPlotData.width/4)*3 - 25)
-.attr("y", densityPlotData.yScale(maleData_data.q3) )
-.attr("height", (densityPlotData.yScale(maleData_data.q1)-densityPlotData.yScale(maleData_data.q3)) )
-.attr("width", 50 )
-.attr("stroke", "black")
-.style("fill", "transparent");
+    femaleData.append("rect")
+        .attr("x", (densityPlotData.width / 4) * 2 - 25)
+        .attr("y", densityPlotData.yScale(femaleData_data.q3))
+        .attr("height", (densityPlotData.yScale(femaleData_data.q1) - densityPlotData.yScale(femaleData_data.q3)))
+        .attr("width", 50)
+        .attr("stroke", "black")
+        .style("fill", "transparent");
 
-// show median, min and max horizontal lines
+    // show median, min and max horizontal lines
 
-maleData.selectAll("toto")
-.data([maleData_data.min, maleData_data.median, maleData_data.max])
-.enter()
-.append("line")
-.attr("x1", (densityPlotData.width/4)*3-25)
-.attr("x2", (densityPlotData.width/4)*3+25)
-.attr("y1", function(d){ return(densityPlotData.yScale(d))} )
-.attr("y2", function(d){ return(densityPlotData.yScale(d))} )
-.attr("stroke", "black");
-  }
+    femaleData.selectAll("toto")
+        .data([femaleData_data.min, femaleData_data.median, femaleData_data.max])
+        .enter()
+        .append("line")
+        .attr("x1", (densityPlotData.width / 4) * 2 - 25)
+        .attr("x2", (densityPlotData.width / 4) * 2 + 25)
+        .attr("y1", function (d) { return (densityPlotData.yScale(d)) })
+        .attr("y2", function (d) { return (densityPlotData.yScale(d)) })
+        .attr("stroke", "black");
+
+
+
+    maleData_data = getSummaryStatistics(whoData.filter(function (d) {
+        return (d.Gender == "Male");
+    }));
+
+
+    maleData.append("line")
+        .attr("x1", (densityPlotData.width / 4) * 3)
+        .attr("x2", (densityPlotData.width / 4) * 3)
+        .attr("y1", densityPlotData.yScale(maleData_data.min))
+        .attr("y2", densityPlotData.yScale(maleData_data.max))
+        .attr("stroke", "black");
+
+    // Show the box
+
+    maleData.append("rect")
+        .attr("x", (densityPlotData.width / 4) * 3 - 25)
+        .attr("y", densityPlotData.yScale(maleData_data.q3))
+        .attr("height", (densityPlotData.yScale(maleData_data.q1) - densityPlotData.yScale(maleData_data.q3)))
+        .attr("width", 50)
+        .attr("stroke", "black")
+        .style("fill", "transparent");
+
+    // show median, min and max horizontal lines
+
+    maleData.selectAll("toto")
+        .data([maleData_data.min, maleData_data.median, maleData_data.max])
+        .enter()
+        .append("line")
+        .attr("x1", (densityPlotData.width / 4) * 3 - 25)
+        .attr("x2", (densityPlotData.width / 4) * 3 + 25)
+        .attr("y1", function (d) { return (densityPlotData.yScale(d)) })
+        .attr("y2", function (d) { return (densityPlotData.yScale(d)) })
+        .attr("stroke", "black");
+}
 
 
 /*Density Chart For Male, Female & All Data Distribution Ends Here*/
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -567,23 +562,23 @@ const MAP_H = 0.5 * window.innerHeight;
 const dimensions = {
     viewBox: '0, 0, 600,300',
     margin: {
-        top: 20,
+        top: 35,
         right: 10,
         bottom: 50,
         left: 20,
     },
     boundedWidth: 500,
-    boundedHeight: 200,
+    boundedHeight: 195,
 }
 
 
 const PROJECTIONS = {
-    ER: d3.geoEquirectangular().scale(MAP_H/ Math.PI),
+    ER: d3.geoEquirectangular().scale(MAP_H / Math.PI),
     IM: d3.geoInterrupt(d3.geoMollweideRaw,
         [[ // northern hemisphere
             [[-180, 0], [-100, 90], [-40, 0]],
             [[-40, 0], [30, 90], [180, 0]]
-        ], [ // southern hemisphere
+        ], [ // southern hemisphere;
             [[-180, 0], [-160, -90], [-100, 0]],
             [[-100, 0], [-60, -90], [-20, 0]],
             [[-20, 0], [20, -90], [80, 0]],
@@ -612,7 +607,6 @@ const ctx = {
 
 
 function makeMap(svgEl) {
-
 
     ctx.dwScale4color = d3.scaleLinear().domain([ctx.min_max.min_LE, ctx.min_max.max_LE]).range([1, 0]);
     let legendG = svgEl.append("g")
@@ -687,7 +681,7 @@ function addCountries() {
         .append("path")
         .attr("class", "country")
         .attr("d", geoGenrator)
-        .style("fill", d => { return getColor(d) })
+        .style("fill", d => { if (d.properties["adm0_a3"] == "FRA") { ctx.COUNTRY = d }; return getColor(d) })
         .style("pointer-events", "all")
         .on("mouseover", function (d, i) {
             d3.select(this).style("fill", "red").style("stoke", "black");
@@ -699,6 +693,8 @@ function addCountries() {
         .on("mouseout", function () { d3.select(this).style("fill", getColor); return tooltip.style("visibility", "hidden"); })
         .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
     ;
+
+    linePlot();
 };
 
 function getValue(d, YEAR, FACTOR, GENDER) {
@@ -739,18 +735,16 @@ function getGlobalView() {
 };
 
 
-
 function initializeSelectBox() {
     d3.select("#year")
         .on('change', function () {
             fig1Year(this.value);
             if (!ctx.SHOW_FIG3) {
-                document.getElementById("f3").innerHTML = "";
-                createButton()
-                
-                createViz3();
-                ScattorPlot();
-                ctx.SHOW_FIG3 = true;
+                // document.getElementById("f3").innerHTML = "";
+                // createButton();
+                // createViz3();
+                // ScattorPlot();
+                // ctx.SHOW_FIG3 = true;
             } else {
                 ScatterChange();
             }
@@ -763,23 +757,24 @@ function initializeSelectBox() {
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 0)
+                    .style("fill-opacity", 1)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 1)
+                    .style("fill-opacity", 0)
             } else if (ctx.GENDER == 'female') {
+                console.log(2)
                 d3.select('#group1')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 1)
+                    .style("fill-opacity", 0)
                 d3.select('#group2')
                     .selectAll('circle')
                     .transition()
                     .duration(1000)
-                    .style("fill-opacity", 0)
+                    .style("fill-opacity", 1)
             } else {
                 d3.select('#group1')
                     .selectAll('circle')
@@ -799,12 +794,14 @@ function initializeSelectBox() {
     d3.select("#factor")
         .on('change', function () {
             fig1Factor(this.value);
+            d3.select("#f1")["_groups"][0][0].childNodes[0].data = "World map showing the heatmap of " + ctx.FACTOR;
             if (ctx.SHOW_FIG2) {
                 linePlot();
             }
             if (!ctx.SHOW_FIG3) {
                 document.getElementById("f3").innerHTML = "";
                 createButton()
+                d3.select("#f3").append("div").attr("id", "fig3_title").text("A scatter plot of Life Expectancy versus " + ctx.FACTOR);
                 createViz3();
                 ScattorPlot();
                 ctx.SHOW_FIG3 = true;
@@ -814,16 +811,21 @@ function initializeSelectBox() {
         });
 }
 
+/* function to update year */
 
 function fig1Year(year) {
     ctx.YEAR = year;
     updateMap();
 }
 
+/* function to update gender */
+
 function fig1Gender(gender) {
     ctx.GENDER = gender;
     updateMap();
 }
+
+/* function to update factor */
 
 function fig1Factor(factor) {
     let min = 0;
@@ -918,6 +920,8 @@ function fig1Factor(factor) {
     updateMap();
 }
 
+/* function to update the map */
+
 function updateMap() {
     let scale4colorLegend = d3.scaleLinear()
         .domain(ctx.rangeOverAll)
@@ -957,6 +961,8 @@ function updateMap() {
         })
 }
 
+/* function to create load data */
+
 function loadData(svgEl) {
 
     getDataRange();
@@ -989,6 +995,8 @@ function loadData(svgEl) {
             fig1Factor("Life expectancy");
         });
 };
+
+/* function to count the range of data of each factor */
 
 function getDataRange(data) {
     d3.csv("who_life_expectancy_all.csv").then(function (data) {
@@ -1074,19 +1082,9 @@ function getDataRange(data) {
     )
 }
 
-// below for line chart
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
-// stop
 
+/*=================================for fig 2 now==================================*/
+/* function to create initialization of the fig2 canvas */
 
 function createViz2() {
     let svgE2 = d3.select("#f2").append("svg");
@@ -1095,10 +1093,11 @@ function createViz2() {
     ctx.myChart = echarts.init(document.getElementById('f2'));
 }
 
+/* function to draw and update the line plot in fig2, using echart */
 
 function linePlot() {
     d = ctx.COUNTRY
-    // ctx.myChart.clear();
+    d3.select("#fig2_title")["_groups"][0][0].childNodes[0].data = "A line chart showing the trend of " + ctx.FACTOR+" and Year (2000 - 2019)";
     d3.csv("who_life_expectancy_all.csv").then(function (da) {
         if (ctx.FACTOR == "Life expectancy") {
             data = da;
@@ -1140,19 +1139,11 @@ function linePlot() {
                 ],
 
                 title: {
-                    text: d.properties.name
+                    text: d.properties.name,
                 },
                 legend: {
                     data: ['male', 'female'],
-                },
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: {
-                        type: 'cross',
-                        axis: 'auto',
-                        snap: true,
-                    },
-                    showContent: false
+                    top: "6%"
                 },
                 xAxis: {
                     type: 'category',
@@ -1261,15 +1252,7 @@ function linePlot() {
                 },
                 legend: {
                     data: ['male', 'female', ctx.FACTOR],
-                },
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: {
-                        type: 'cross',
-                        axis: 'auto',
-                        snap: true,
-                    },
-                    showContent: false
+                    top: "6%"
                 },
                 xAxis: {
                     type: 'category',
@@ -1348,12 +1331,6 @@ function linePlot() {
                         name: ctx.FACTOR,
                         datasetId: 'female',
                         type: 'line',
-                        // label: {
-                        //     normal: {
-                        //         show: true,
-                        //         position: 'top'
-                        //     }
-                        // },
                         yAxisIndex: '1',
                         encode: {
                             x: 'Year',
@@ -1406,15 +1383,7 @@ function linePlot() {
                 },
                 legend: {
                     data: ['male', 'female', ctx.FACTOR],
-                },
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: {
-                        type: 'cross',
-                        axis: 'auto',
-                        snap: true,
-                    },
-                    showContent: false
+                    top: "6%"
                 },
                 xAxis: {
                     type: 'category',
@@ -1461,11 +1430,10 @@ function linePlot() {
                         name: 'male',
                         datasetId: 'male',
                         type: 'line',
-                        symbolSize: 0, // symbol的大小设置为0让线的小圆点不显示
-                        showSymbol: false, // 不显示symbol不显示
+                        symbolSize: 0,
+                        showSymbol: false,
                         lineStyle: {
-                            width: 0, // 线宽是0不显示线
-                            color: 'rgba(0, 0, 0, 0)' // 线的颜色是透明的
+                            width: 0, 
                         },
                         label: {
                             normal: {
@@ -1499,13 +1467,6 @@ function linePlot() {
                         name: ctx.FACTOR,
                         datasetId: 'female',
                         type: 'line',
-                        // label: {
-                        //     normal: {
-                        //         show: true,
-                        //         position: 'top'
-                        //     }
-                        // },
-                        // barMaxWidth: '20%',
                         yAxisIndex: '1',
                         encode: {
                             x: 'Year',
@@ -1558,15 +1519,7 @@ function linePlot() {
                 },
                 legend: {
                     data: ['male', 'female', ctx.FACTOR],
-                },
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: {
-                        type: 'cross',
-                        axis: 'auto',
-                        snap: true,
-                    },
-                    showContent: false
+                    top: "6%"
                 },
                 xAxis: {
                     type: 'category',
@@ -1675,19 +1628,9 @@ function linePlot() {
 }
 
 
+/*=================================for fig 3 now==================================*/
+/* function to create initialization of the fig3 canvas */
 
-//scatter plot
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
-//stop
 function createViz3() {
     let svgE3 = d3.select("#f3").append("svg");
     svgE3.attr("width", MAP_W);
@@ -1698,7 +1641,12 @@ function createViz3() {
 }
 
 
+
+/* function to update the fig3 scatterplot */
+
 function ScatterChange() {
+
+    d3.select("#fig3_title").text("A scatter plot of Life Expectanct versus " + ctx.FACTOR);
     xAxisGenerator = d3.axisBottom(ctx.fig3_scaler);
     ctx.bounds
         .select('#group1')
@@ -1712,7 +1660,7 @@ function ScatterChange() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'male'));
         })
-        .attr('r', 1).attr('fill', '#87cefa');
+        .attr('r', 2).attr('fill', '#87cefa');
     ctx.bounds
         .select('#group2')
         .selectAll('circle')
@@ -1725,22 +1673,24 @@ function ScatterChange() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'female'));
         })
-        .attr('r', 1).attr('fill', '#eaa9ac');
+        .attr('r', 2).attr('fill', '#eaa9ac');
     ctx.xAxis
         .call(xAxisGenerator)
         .style('transform', `translate(0,${dimensions.boundedHeight}px)`)
         .select('text')
         .attr('x', dimensions.boundedWidth / 2)
         .attr('y', dimensions.margin.bottom - 10)
-        .attr('fill', 'grey')
+        .attr('fill', 'black')
         .style('font-size', '1em')
         .text(ctx.FACTOR)
 
     d3.select("#yearname")
-    .text(ctx.YEAR)
+        .text(ctx.YEAR)
 }
 
 
+
+/* functions to initialize the fig3 scatterplot */
 
 function ScattorPlot() {
 
@@ -1748,7 +1698,7 @@ function ScattorPlot() {
         return;
     }
     x_scaler = ctx.fig3_scaler;
-    ctx.y_scaler = d3.scaleLinear().domain([0, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
+    ctx.y_scaler = d3.scaleLinear().domain([30, ctx.min_max.max_LE]).range([dimensions.boundedHeight, 0]);
 
     var tooltip = d3.select("body")
         .append("div")
@@ -1758,15 +1708,15 @@ function ScattorPlot() {
         .style('background-color', 'Gainsboro')
         .text("a simple tooltip");
 
-    
+
     let colorGender = ctx.bounds.append('g')
-    .attr("id", "colorGender")
-    .attr("opacity", 1)
-    colorGender.append("rect").attr("transform", "translate(525, 0)").attr("width",40).attr("height",15).attr("fill","grey").attr("opacity", 0.5).attr("stroke","black");
-    colorGender.append("text").attr("id","yearname").attr("transform", "translate(532, 10)").text(ctx.YEAR).attr("fill", "black").attr("font-size", 10);
-    colorGender.append("rect").attr("transform", "translate(520, 20)").attr("width",8).attr("height",8).attr("fill",'#87cefa');
+        .attr("id", "colorGender")
+        .attr("opacity", 1)
+    colorGender.append("rect").attr("transform", "translate(525, 0)").attr("width", 40).attr("height", 15).attr("fill", "#A5C3D57E").attr("opacity", 0.5).attr("stroke", "black");
+    colorGender.append("text").attr("id", "yearname").attr("transform", "translate(532, 10)").text(ctx.YEAR).attr("fill", "black").attr("font-size", 10);
+    colorGender.append("rect").attr("transform", "translate(520, 20)").attr("width", 8).attr("height", 8).attr("fill", '#87cefa');
     colorGender.append("text").attr("transform", "translate(535, 26)").text("male").attr("fill", "black").attr("font-size", 8);
-    colorGender.append("rect").attr("transform", "translate(520, 30)").attr("width",8).attr("height",8).attr("fill",'#eaa9ac');
+    colorGender.append("rect").attr("transform", "translate(520, 30)").attr("width", 8).attr("height", 8).attr("fill", '#eaa9ac');
     colorGender.append("text").attr("transform", "translate(535, 36)").text("female").attr("fill", "black").attr("font-size", 8);
 
     let scatterGroups = ctx.bounds
@@ -1782,7 +1732,7 @@ function ScattorPlot() {
         .attr('cy', function (d) {
             return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'male'));
         })
-        .attr('r', 1).attr('fill', '#87cefa')
+        .attr('r', 2).attr('fill', '#87cefa')
         .on("mouseover", function (d, i) {
             d3.select(this).attr("r", 5).style("stoke", "black");
             return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"], ctx.YEAR, ctx.FACTOR, ctx.GENDER) + "</p>");
@@ -1790,7 +1740,7 @@ function ScattorPlot() {
         .on('mousemove', function (d) {
             return tooltip.style('top', (event.pageY - 50) + 'px').style('left', (event.pageX + 50) + 'px');
         })
-        .on("mouseout", function () { d3.select(this).attr("r", 1); return tooltip.style("visibility", "hidden"); })
+        .on("mouseout", function () { d3.select(this).attr("r", 2); return tooltip.style("visibility", "hidden"); })
         .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
 
     let scatterGroups2 =
@@ -1807,7 +1757,7 @@ function ScattorPlot() {
             .attr('cy', function (d) {
                 return ctx.y_scaler(getValue(d, ctx.YEAR, 'Life expectancy', 'female'));
             })
-            .attr('r', 1).attr('fill', '#eaa9ac')
+            .attr('r', 2).attr('fill', '#eaa9ac')
             .on("mouseover", function (d, i) {
                 d3.select(this).attr("r", 5).style("stoke", "black");
                 return tooltip.style("visibility", "visible").html("<p>" + d.path[0]["__data__"].properties.formal_en + "<br>" + ctx.FACTOR + ": " + getValue(d.path[0]["__data__"], ctx.YEAR, ctx.FACTOR, ctx.GENDER) + "</p>");
@@ -1815,8 +1765,8 @@ function ScattorPlot() {
             .on('mousemove', function (d) {
                 return tooltip.style('top', (event.pageY - 50) + 'px').style('left', (event.pageX + 50) + 'px');
             })
-            .on("mouseout", function () { d3.select(this).attr("r", 1); return tooltip.style("visibility", "hidden"); })
-            .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
+            .on("mouseout", function () { d3.select(this).attr("r", 2); return tooltip.style("visibility", "hidden"); })
+            .on("click", d => { ctx.COUNTRY = d.path[0]["__data__"]; console.log(d); linePlot(ctx.COUNTRY); ctx.SHOW_FIG2 = true; });
 
     ctx.xAxis = ctx.bounds.append('g')
     ctx.xAxis.append('text')
@@ -1834,7 +1784,7 @@ function ScattorPlot() {
         .select('text')
         .attr('x', dimensions.boundedWidth / 2)
         .attr('y', dimensions.margin.bottom - 10)
-        .attr('fill', 'grey')
+        .attr('fill', 'black')
         .style('font-size', '  1em')
         .text(ctx.FACTOR)
     const yAxisGenerator = d3.axisLeft(ctx.y_scaler).tickSize(-dimensions.boundedWidth)
@@ -1842,19 +1792,24 @@ function ScattorPlot() {
     ctx.yAxis
         .call(yAxisGenerator)
         .call(g => g.select(".domain")
-        .remove())
+            .remove())
         .call(g => g.selectAll(".tick:not(:first-of-type) line")
-        .attr("stroke-opacity", 0.5)
-        .attr("stroke-dasharray", "2,2"))
-        .select('text')
-        .style('transform', 'translate(0,0)')
-        .text('Life Expectancy')
-        .style('text-anchor', 'middle')
-        .attr("fill", "grey")
+            .attr("stroke-opacity", 0.5)
+            .attr("stroke-dasharray", "2,2"))
+
+    d3.select("#f3").select("svg").append("g")
+        .append("text")
+        .attr("y", 0)
+        .attr("x", 0)
+        .attr("transform", `rotate(-90) translate(-180,-10)`)
+        .attr('font-size', '0.6em')
+        .text("Life Expectancy");
 
 
-    
+
 }
+
+/* functions to realize fig3 animation */
 
 function animation() {
     if (ctx.animation_button) {
@@ -1867,7 +1822,7 @@ function animation() {
             ctx.YEAR = parseInt(ctx.YEAR) + 1;
             ScatterChange();
         }
-            , 2000)
+            , 1000)
         ctx.animation_button = false;
     } else {
         ctx.YEAR = ctx.animation_year
@@ -1880,12 +1835,12 @@ function animation() {
 
 /* Function to dynamically add the animate button on the Figure 3 Scare Plot*/
 
-function createButton(){
+function createButton() {
     let btn = document.createElement("button");
-        btn.innerHTML = "Animate";
-        btn.id = "btn";
-        btn.onclick = animation();
-        document.getElementById("f3").appendChild(btn);
+    btn.innerHTML = "Animate";
+    btn.id = "btn";
+    btn.onclick = animation;
+    document.getElementById("f3").appendChild(btn);
 }
 
 
@@ -1901,15 +1856,15 @@ function createViz() {
     let svgEl = d3.select("#f1").append("svg");
     svgEl.attr("width", MAP_W);
     svgEl.attr("height", MAP_H);
+    loadData(svgEl);
     createNodes();
     loadContinents();
     createViz2();
-    if(ctx.SHOW_FIG3){
+    if (ctx.SHOW_FIG3) {
         createViz3();
-    }else{
+    } else {
         createVizf32()
     }
-    loadData(svgEl);
 };
 
 /*Visualization Loader Ends Here*/

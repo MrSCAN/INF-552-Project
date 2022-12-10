@@ -1,7 +1,58 @@
+html, body {
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0;
+  margin: 0;
+}
+div {
+  position: absolute;
+  padding: 1em;
+  border: 0px solid #555;
+}
+#f1 {
+  background: rgb(255, 255, 255);
+  top: 3%;
+  left: 0;
+  right: 50%;
+  bottom: 50%;
+  margin-top: 1rem;
+}
+#fig2_title {
+  background: rgb(255, 255, 255);
+  top: 4%;
+  left: 50%;
+  right: 0;
+  bottom: 10%;
+}
+#f2 {
+  background: rgb(255, 255, 255);
+  top: 10%;
+  left: 50%;
+  right: 0;
+  bottom: 50%;
+}
+#f3 {
+  background: rgb(255, 255, 255);
+  top: 50%;
+  left: 0;  
+  right: 50%;
+  bottom: 0;
+}
+#f4 {
+  background: rgb(254, 254, 254);
+  top: 50%;
+  left: 50%;
+  right: 0;
+  bottom: 0;
+}
+
 .chart-container .current-date {
-    font-size: 45px;
-    fill: #42a447;
+  display: inline-block;
+    font-size: 20px;
+    fill: #0044ff;
     text-anchor: end;
+    background: grey;
+    border: 1px solid rgb(137, 41, 41);
   }
   
   button {
@@ -18,3 +69,33 @@
   button:hover {
     box-shadow: 0 0 10px 0 rgb(58, 58, 113) inset, 0 0 10px 4px rgb(160, 184, 195);
   }
+
+  #topBar{
+    z-index: 1;
+    background-color: white;
+    height: 2%;
+    margin: 5px 5px;
+    width: max-content;
+    box-shadow: rgba(187, 187, 211, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+    border-radius: 5px;
+ 
+  }
+
+
+select {
+    box-sizing: border-box;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+    width: max-content;
+    height: 34px;
+    padding: 10px 10px;
+    margin-bottom: 10px;
+    background: transparent;
+    border: none;
+    background-color: rgba(165, 195, 213, 0.493);
+}
+  select:focus { outline: none; }
+
+  
+  
