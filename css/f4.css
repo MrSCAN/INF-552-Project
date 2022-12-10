@@ -33,8 +33,8 @@ div {
 }
 #f3 {
   background: rgb(255, 255, 255);
-  top: 60%;
-  left: 0;
+  top: 50%;
+  left: 0;  
   right: 50%;
   bottom: 0;
 }
@@ -47,9 +47,12 @@ div {
 }
 
 .chart-container .current-date {
+  display: inline-block;
     font-size: 20px;
-    fill: #42a447;
+    fill: #0044ff;
     text-anchor: end;
+    background: grey;
+    border: 1px solid rgb(137, 41, 41);
   }
   
   button {
@@ -69,8 +72,8 @@ div {
 
   #topBar{
     z-index: 1;
-    background-color: #a95e3850;
-    height: 2.5%;
+    background-color: white;
+    height: 2%;
     margin: 5px 5px;
     width: max-content;
     box-shadow: rgba(187, 187, 211, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
@@ -80,7 +83,6 @@ div {
 
 
 select {
-    border-top: 1px solid rgb(28, 202, 54);
     box-sizing: border-box;
     border-radius: 5px;
     overflow: hidden;
@@ -91,7 +93,7 @@ select {
     margin-bottom: 10px;
     background: transparent;
     border: none;
-    background-color: rgb(32, 136, 200);
+    background-color: rgba(165, 195, 213, 0.493);
 }
   select:focus { outline: none; }
 

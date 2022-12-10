@@ -92,7 +92,7 @@ function BarChartRace(chartId) {
         .select(".current-date")
         .attr(
             "transform",
-            `translate(${chartSettings.innerWidth - chartSettings.padding * 1.5} ${chartSettings.innerHeight / 2})`
+            `translate(${chartSettings.innerWidth - chartSettings.padding - 580}, -20)`
         );
 
     function draw({ dataSet, date: currentDate }, transition) {
@@ -103,6 +103,7 @@ function BarChartRace(chartId) {
         );
 
         chartContainer.select(".current-date").text(currentDate);
+        // ctx.f4.setTitle("A Chart Showing Life Expectancy of Different Continents for "+currentDate);
 
         xAxisScale.domain([0, dataSetDescendingOrder[0].value]);
         yAxisScale.domain(dataSetDescendingOrder.map(({ name }) => name));
@@ -292,8 +293,8 @@ function BarChartRace(chartId) {
 
 function runBarChart() {
     const f4 = new BarChartRace("bar-chart-race");
-
-    f4.setTitle("A Chart Showing Life Expectancy of Different Continents between 1950 & 2019")
+    ctx.f4 = f4;
+    f4.setTitle("A Chart Showing Life Expectancy of Different Continents for")
         .addDatasets(chartSettings.dataSets)
         .render();
 
@@ -1711,7 +1712,7 @@ function ScattorPlot() {
     let colorGender = ctx.bounds.append('g')
         .attr("id", "colorGender")
         .attr("opacity", 1)
-    colorGender.append("rect").attr("transform", "translate(525, 0)").attr("width", 40).attr("height", 15).attr("fill", "grey").attr("opacity", 0.5).attr("stroke", "black");
+    colorGender.append("rect").attr("transform", "translate(525, 0)").attr("width", 40).attr("height", 15).attr("fill", "#A5C3D57E").attr("opacity", 0.5).attr("stroke", "black");
     colorGender.append("text").attr("id", "yearname").attr("transform", "translate(532, 10)").text(ctx.YEAR).attr("fill", "black").attr("font-size", 10);
     colorGender.append("rect").attr("transform", "translate(520, 20)").attr("width", 8).attr("height", 8).attr("fill", '#87cefa');
     colorGender.append("text").attr("transform", "translate(535, 26)").text("male").attr("fill", "black").attr("font-size", 8);
@@ -1801,7 +1802,7 @@ function ScattorPlot() {
         .attr("y", 0)
         .attr("x", 0)
         .attr("transform", `rotate(-90) translate(-180,-10)`)
-        .attr('font-size', '0.7em')
+        .attr('font-size', '0.6em')
         .text("Life Expectancy");
 
 
